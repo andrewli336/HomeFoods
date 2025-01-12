@@ -1,31 +1,19 @@
 //
-//  FoodItemRow.swift
+//  FoodItemSquare.swift
 //  HomeFoods
 //
-//  Created by Andrew Li on 12/23/24.
+//  Created by Andrew Li on 1/11/25.
 //
+
 import SwiftUI
 
-struct FoodItemRow: View {
+struct FoodItemSquare: View {
     let foodItem: FoodItem
     @State private var showSheet = false // State to control sheet presentation
 
     var body: some View {
-        HStack(spacing: 15) {
-            // Food item details
-            VStack(alignment: .leading, spacing: 8) {
-                Text(foodItem.name)
-                    .font(.headline)
-                Text(foodItem.description)
-                    .font(.subheadline)
-                    .foregroundColor(.gray)
-                    .lineLimit(2)
-                Text("$\(foodItem.cost, specifier: "%.2f") • \(Image(systemName: "hand.thumbsup")) \(Int(foodItem.rating))% (\(foodItem.numRatings))")
-                    .font(.subheadline)
-                    .foregroundStyle(.gray)
-            }
-            Spacer()
-            
+        VStack(spacing: 15) {
+            // Food item image (square)
             ZStack {
                 // Food item image
                 foodItem.image
@@ -53,13 +41,20 @@ struct FoodItemRow: View {
                 }
             }
             .frame(width: 150, height: 150) // Ensure the ZStack matches the image size
+
+            // Food item details (left-aligned)
+            VStack(alignment: .leading, spacing: 8) {
+                Text(foodItem.name)
+                    .font(.headline)
+
+                Text("$\(foodItem.cost, specifier: "%.2f") • \(Image(systemName: "hand.thumbsup")) \(Int(foodItem.rating))% (\(foodItem.numRatings))")
+                    .font(.subheadline)
+                    .foregroundStyle(.gray)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading) // Ensure left alignment
         }
+        .frame(width: 150, height: 188) // Adjust height to fit content
         .padding()
-        .background(
-            RoundedRectangle(cornerRadius: 10)
-                .fill(Color.white)
-                .shadow(color: Color.black.opacity(0.1), radius: 3, x: 0, y: 2)
-        )
         .onTapGesture {
             showSheet = true // Show the sheet when tapped
         }
@@ -72,6 +67,5 @@ struct FoodItemRow: View {
 
 #Preview {
     let sampleFood = sampleKitchens[0].foodItems[0]
-    FoodItemRow(foodItem: sampleFood)
-
+    FoodItemSquare(foodItem: sampleFood)
 }

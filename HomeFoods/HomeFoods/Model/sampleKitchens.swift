@@ -22,84 +22,111 @@ let sampleKitchens = [
                 kitchenName: "Happy & Healthy Kitchen",
                 description: "Tender beef tendon braised in a savory soy-based sauce with aromatic spices.",
                 foodType: "Main Course",
-                rating: 4.9,
+                rating: 95,
+                numRatings: 16,
                 cost: 12,
-                image: Image("h1")
+                image: Image("h1"),
+                isFeatured: true,
+                numAvailable: 5
             ),
             FoodItem(
                 name: "Rice Dumpling with Pork",
                 kitchenName: "Happy & Healthy Kitchen",
                 description: "Sticky rice dumplings stuffed with seasoned pork and wrapped in bamboo leaves.",
                 foodType: "Main Course",
-                rating: 4.8,
+                rating: 91,
+                numRatings: 12,
                 cost: 10,
-                image: Image("h2")
+                image: Image("h2"),
+                isFeatured: false,
+                numAvailable: 5
             ),
             FoodItem(
                 name: "Sweet and Sour Ribs",
                 kitchenName: "Happy & Healthy Kitchen",
                 description: "Juicy pork ribs coated in a sweet and tangy sauce with hints of vinegar.",
                 foodType: "Main Course",
-                rating: 4.7,
+                rating: 89,
+                numRatings: 9,
                 cost: 8,
-                image: Image("h3")
+                image: Image("h3"),
+                isFeatured: true,
+                numAvailable: 5
             ),
             FoodItem(
                 name: "Pearl Meatballs",
                 kitchenName: "Happy & Healthy Kitchen",
                 description: "Delicious pork meatballs rolled in glutinous rice, steamed to perfection.",
                 foodType: "Main Course",
-                rating: 4.7,
+                rating: 87,
+                numRatings: 10,
                 cost: 5,
-                image: Image("h4")
+                image: Image("h4"),
+                isFeatured: false,
+                numAvailable: 5
             ),
             FoodItem(
                 name: "Banh Mi",
                 kitchenName: "Happy & Healthy Kitchen",
                 description: "Vietnamese sandwich filled with pork, lettuce, and pickles.",
                 foodType: "Main Course",
-                rating: 4.7,
+                rating: 90,
+                numRatings: 14,
                 cost: 10,
-                image: Image("h5")
+                image: Image("h5"),
+                isFeatured: true,
+                numAvailable: 5
             ),
             FoodItem(
                 name: "Braised Brisket",
                 kitchenName: "Happy & Healthy Kitchen",
                 description: "Succulent beef brisket slow-cooked in a rich, flavorful broth.",
                 foodType: "Main Course",
-                rating: 4.7,
+                rating: 88,
+                numRatings: 11,
                 cost: 8,
-                image: Image("h6")
+                image: Image("h6"),
+                isFeatured: false,
+                numAvailable: 5
             ),
             FoodItem(
                 name: "Braised Pork Belly",
                 kitchenName: "Happy & Healthy Kitchen",
                 description: "Soft and flavorful pork belly braised in soy sauce and Chinese spices.",
                 foodType: "Main Course",
-                rating: 4.7,
+                rating: 89,
+                numRatings: 13,
                 cost: 7,
-                image: Image("h7")
+                image: Image("h7"),
+                isFeatured: false,
+                numAvailable: 5
             ),
             FoodItem(
                 name: "Crispy Belt Fish",
                 kitchenName: "Happy & Healthy Kitchen",
                 description: "Lightly battered belt fish fried until golden and crispy, served with a dipping sauce.",
                 foodType: "Main Course",
-                rating: 4.7,
+                rating: 85,
+                numRatings: 8,
                 cost: 6,
-                image: Image("h8")
+                image: Image("h8"),
+                isFeatured: false,
+                numAvailable: 0
             ),
             FoodItem(
                 name: "Roasted Pork Feet",
                 kitchenName: "Happy & Healthy Kitchen",
                 description: "Juicy pork feet roasted to crispy perfection with aromatic seasonings.",
                 foodType: "Main Course",
-                rating: 4.7,
+                rating: 92,
+                numRatings: 18,
                 cost: 5,
-                image: Image("h9")
+                image: Image("h9"),
+                isFeatured: true,
+                numAvailable: 3
             )
         ],
-        image: Image("h1")
+        image: Image("h1"), preorderSchedule: nil
     ),
     
     Kitchen(
@@ -114,30 +141,39 @@ let sampleKitchens = [
                 kitchenName: "Golden Wok Delights",
                 description: "Spicy stir-fried chicken with peanuts, peppers, and a tangy sauce.",
                 foodType: "Main Course",
-                rating: 4.8,
+                rating: 80,
+                numRatings: 5,
                 cost: 12,
-                image: Image("food3")
+                image: Image("food3"),
+                isFeatured: true,
+                numAvailable: 5
             ),
             FoodItem(
                 name: "Dan Dan Noodles",
                 kitchenName: "Golden Wok Delights",
                 description: "Savory noodles topped with minced pork, sesame paste, and a spicy chili oil.",
                 foodType: "Main Course",
-                rating: 4.7,
+                rating: 85,
+                numRatings: 5,
                 cost: 10,
-                image: Image("food4")
+                image: Image("food4"),
+                isFeatured: true,
+                numAvailable: 5
             ),
             FoodItem(
                 name: "Mapo Tofu",
                 kitchenName: "Golden Wok Delights",
                 description: "Silky tofu cooked in a spicy Sichuan pepper sauce with minced pork.",
                 foodType: "Main Course",
-                rating: 4.9,
+                rating: 84,
+                numRatings: 5,
                 cost: 9,
-                image: Image("food5")
+                image: Image("food5"),
+                isFeatured: false,
+                numAvailable: 5
             )
         ],
-        image: Image("food3")
+        image: Image("food3"), preorderSchedule: nil
     ),
     
     Kitchen(
@@ -152,30 +188,39 @@ let sampleKitchens = [
                 kitchenName: "Dragon's Pearl Bistro",
                 description: "Crispy roasted duck served with pancakes, hoisin sauce, and scallions.",
                 foodType: "Main Course",
-                rating: 4.9,
+                rating: 82,
+                numRatings: 5,
                 cost: 20,
-                image: Image("food7")
+                image: Image("food7"),
+                isFeatured: true,
+                numAvailable: 5
             ),
             FoodItem(
                 name: "Sesame Chicken",
                 kitchenName: "Dragon's Pearl Bistro",
                 description: "Tender chicken coated in a sweet sesame sauce with a crispy crust.",
                 foodType: "Main Course",
-                rating: 4.8,
+                rating: 81,
+                numRatings: 5,
                 cost: 12,
-                image: Image("food8")
+                image: Image("food8"),
+                isFeatured: true,
+                numAvailable: 5
             ),
             FoodItem(
                 name: "Hot and Sour Soup",
                 kitchenName: "Dragon's Pearl Bistro",
                 description: "Classic soup with a tangy, spicy broth and a mix of mushrooms and tofu.",
                 foodType: "Appetizer",
-                rating: 4.7,
+                rating: 87,
+                numRatings: 5,
                 cost: 7,
-                image: Image("food9")
+                image: Image("food9"),
+                isFeatured: false,
+                numAvailable: 5
             )
         ],
-        image: Image("food7")
+        image: Image("food7"), preorderSchedule: nil
     ),
     
     // Vegan Kitchen 1
@@ -191,30 +236,39 @@ let sampleKitchens = [
                 kitchenName: "Green Garden Eats",
                 description: "A refreshing salad with quinoa, avocado, cherry tomatoes, and a citrus vinaigrette.",
                 foodType: "Salad",
-                rating: 4.8,
+                rating: 90,
+                numRatings: 5,
                 cost: 10,
-                image: Image("food4")
+                image: Image("food4"),
+                isFeatured: true,
+                numAvailable: 5
             ),
             FoodItem(
                 name: "Vegan Buddha Bowl",
                 kitchenName: "Green Garden Eats",
                 description: "A nutritious bowl with roasted vegetables, chickpeas, and tahini dressing.",
                 foodType: "Main Course",
-                rating: 4.9,
+                rating: 90,
+                numRatings: 5,
                 cost: 12,
-                image: Image("food5")
+                image: Image("food5"),
+                isFeatured: true,
+                numAvailable: 5
             ),
             FoodItem(
                 name: "Sweet Potato Soup",
                 kitchenName: "Green Garden Eats",
                 description: "Creamy sweet potato soup with a hint of coconut and spices.",
                 foodType: "Soup",
-                rating: 4.7,
+                rating: 50,
+                numRatings: 5,
                 cost: 8,
-                image: Image("food6")
+                image: Image("food6"),
+                isFeatured: false,
+                numAvailable: 5
             )
         ],
-        image: Image("food4")
+        image: Image("food4"), preorderSchedule: nil
     ),
 
     // Vegan Kitchen 2
@@ -230,30 +284,39 @@ let sampleKitchens = [
                 kitchenName: "Pure Plant Bistro",
                 description: "Creamy pasta with sautéed mushrooms in a rich vegan stroganoff sauce.",
                 foodType: "Main Course",
-                rating: 4.9,
+                rating: 50,
+                numRatings: 5,
                 cost: 14,
-                image: Image("food7")
+                image: Image("food7"),
+                isFeatured: false,
+                numAvailable: 5
             ),
             FoodItem(
                 name: "Jackfruit Tacos",
                 kitchenName: "Pure Plant Bistro",
                 description: "Soft-shell tacos filled with spiced jackfruit and fresh salsa.",
                 foodType: "Main Course",
-                rating: 4.8,
+                rating: 75,
+                numRatings: 5,
                 cost: 11,
-                image: Image("food8")
+                image: Image("food8"),
+                isFeatured: true,
+                numAvailable: 5
             ),
             FoodItem(
                 name: "Chocolate Chia Pudding",
                 kitchenName: "Pure Plant Bistro",
                 description: "Decadent chia seed pudding with cacao and almond milk.",
                 foodType: "Dessert",
-                rating: 4.7,
+                rating: 90,
+                numRatings: 5,
                 cost: 6,
-                image: Image("food9")
+                image: Image("food9"),
+                isFeatured: true,
+                numAvailable: 5
             )
         ],
-        image: Image("food7")
+        image: Image("food7"), preorderSchedule: nil
     ),
 
     // Vegan Kitchen 3
@@ -269,30 +332,39 @@ let sampleKitchens = [
                 kitchenName: "Roots & Sprouts",
                 description: "A Thai classic with rice noodles, tofu, and a zesty peanut sauce.",
                 foodType: "Main Course",
-                rating: 4.9,
+                rating: 95,
+                numRatings: 5,
                 cost: 13,
-                image: Image("food1")
+                image: Image("food1"),
+                isFeatured: false,
+                numAvailable: 5
             ),
             FoodItem(
                 name: "Zucchini Noodles with Pesto",
                 kitchenName: "Roots & Sprouts",
                 description: "Spiralized zucchini tossed in a creamy vegan pesto sauce.",
                 foodType: "Main Course",
-                rating: 4.8,
+                rating: 94,
+                numRatings: 5,
                 cost: 11,
-                image: Image("food2")
+                image: Image("food2"),
+                isFeatured: true,
+                numAvailable: 5
             ),
             FoodItem(
                 name: "Carrot Cake Bites",
                 kitchenName: "Roots & Sprouts",
                 description: "Mini vegan carrot cakes topped with cashew cream frosting.",
                 foodType: "Dessert",
-                rating: 4.8,
+                rating: 100,
+                numRatings: 5,
                 cost: 7,
-                image: Image("food3")
+                image: Image("food3"),
+                isFeatured: true,
+                numAvailable: 5
             )
         ],
-        image: Image("food1")
+        image: Image("food1"), preorderSchedule: nil
     ),
     
     // Dessert Kitchen 1
@@ -308,30 +380,39 @@ let sampleKitchens = [
                 kitchenName: "Sweet Haven",
                 description: "Creamy cheesecake with a buttery graham cracker crust.",
                 foodType: "Dessert",
-                rating: 4.9,
+                rating: 100,
+                numRatings: 5,
                 cost: 8,
-                image: Image("food4")
+                image: Image("food4"),
+                isFeatured: true,
+                numAvailable: 5
             ),
             FoodItem(
                 name: "Chocolate Eclair",
                 kitchenName: "Sweet Haven",
                 description: "Delicate choux pastry filled with rich chocolate cream.",
                 foodType: "Dessert",
-                rating: 4.7,
+                rating: 98,
+                numRatings: 5,
                 cost: 6,
-                image: Image("food5")
+                image: Image("food5"),
+                isFeatured: false,
+                numAvailable: 5
             ),
             FoodItem(
                 name: "Fruit Tart",
                 kitchenName: "Sweet Haven",
                 description: "A buttery tart shell filled with custard and topped with fresh fruit.",
                 foodType: "Dessert",
-                rating: 4.8,
+                rating: 94,
+                numRatings: 5,
                 cost: 7,
-                image: Image("food6")
+                image: Image("food6"),
+                isFeatured: true,
+                numAvailable: 5
             )
         ],
-        image: Image("food4")
+        image: Image("food4"), preorderSchedule: nil
     ),
 
     // Dessert Kitchen 2
@@ -347,30 +428,39 @@ let sampleKitchens = [
                 kitchenName: "Chocolate Bliss",
                 description: "A rich chocolate cake layered with dark chocolate ganache.",
                 foodType: "Dessert",
-                rating: 4.9,
+                rating: 87,
+                numRatings: 5,
                 cost: 9,
-                image: Image("food7")
+                image: Image("food7"),
+                isFeatured: false,
+                numAvailable: 5
             ),
             FoodItem(
                 name: "Chocolate Fondue",
                 kitchenName: "Chocolate Bliss",
                 description: "Warm melted chocolate served with fresh fruit and marshmallows.",
                 foodType: "Dessert",
-                rating: 4.8,
+                rating: 72,
+                numRatings: 5,
                 cost: 10,
-                image: Image("food8")
+                image: Image("food8"),
+                isFeatured: true,
+                numAvailable: 5
             ),
             FoodItem(
                 name: "Hot Cocoa with Whipped Cream",
                 kitchenName: "Chocolate Bliss",
                 description: "Creamy hot cocoa topped with fresh whipped cream.",
                 foodType: "Drink",
-                rating: 4.8,
+                rating: 76,
+                numRatings: 5,
                 cost: 5,
-                image: Image("food9")
+                image: Image("food9"),
+                isFeatured: true,
+                numAvailable: 5
             )
         ],
-        image: Image("food7")
+        image: Image("food7"), preorderSchedule: nil
     ),
 
     // Dessert Kitchen 3
@@ -386,30 +476,39 @@ let sampleKitchens = [
                 kitchenName: "Berrylicious Desserts",
                 description: "Fluffy cake layered with strawberries and whipped cream.",
                 foodType: "Dessert",
-                rating: 4.9,
+                rating: 55,
+                numRatings: 5,
                 cost: 8,
-                image: Image("food1")
+                image: Image("food1"),
+                isFeatured: true,
+                numAvailable: 5
             ),
             FoodItem(
                 name: "Mixed Berry Parfait",
                 kitchenName: "Berrylicious Desserts",
                 description: "Layers of fresh berries, granola, and yogurt.",
                 foodType: "Dessert",
-                rating: 4.8,
+                rating: 77,
+                numRatings: 5,
                 cost: 7,
-                image: Image("food2")
+                image: Image("food2"),
+                isFeatured: false,
+                numAvailable: 5
             ),
             FoodItem(
                 name: "Blueberry Pie",
                 kitchenName: "Berrylicious Desserts",
                 description: "Traditional blueberry pie with a flaky crust and sweet filling.",
                 foodType: "Dessert",
-                rating: 4.9,
+                rating: 66,
+                numRatings: 5,
                 cost: 9,
-                image: Image("food3")
+                image: Image("food3"),
+                isFeatured: true,
+                numAvailable: 5
             )
         ],
-        image: Image("food1")
+        image: Image("food1"), preorderSchedule: nil
     ),
 
     // Dessert Kitchen 4
@@ -425,29 +524,38 @@ let sampleKitchens = [
                 kitchenName: "Delightful Bites",
                 description: "Soft and chewy cookies loaded with chocolate chips.",
                 foodType: "Dessert",
-                rating: 4.8,
+                rating: 86,
+                numRatings: 5,
                 cost: 5,
-                image: Image("food6")
+                image: Image("food6"),
+                isFeatured: true,
+                numAvailable: 5
             ),
             FoodItem(
                 name: "Salted Caramel Brownies",
                 kitchenName: "Delightful Bites",
                 description: "Rich brownies topped with gooey salted caramel.",
                 foodType: "Dessert",
-                rating: 4.9,
+                rating: 47,
+                numRatings: 5,
                 cost: 6,
-                image: Image("food7")
+                image: Image("food7"),
+                isFeatured: false,
+                numAvailable: 5
             ),
             FoodItem(
                 name: "Peanut Butter Bars",
                 kitchenName: "Delightful Bites",
                 description: "Crunchy and sweet peanut butter bars with a chocolate topping.",
                 foodType: "Dessert",
-                rating: 4.7,
+                rating: 73,
+                numRatings: 5,
                 cost: 6,
-                image: Image("food8")
+                image: Image("food8"),
+                isFeatured: true,
+                numAvailable: 5
             )
         ],
-        image: Image("food6")
+        image: Image("food6"), preorderSchedule: nil
     )
 ]

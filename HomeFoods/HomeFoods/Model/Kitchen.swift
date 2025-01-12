@@ -18,4 +18,5 @@ struct Kitchen: Identifiable {
     let location: CLLocationCoordinate2D
     let foodItems: [FoodItem]
     let image: Image
+    let preorderSchedule: PreorderSchedule?
 }

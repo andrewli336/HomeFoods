@@ -15,7 +15,10 @@ struct FoodItem: Identifiable {
     let description: String
     let foodType: String
     let rating: Double
+    let numRatings: Int
     let cost: Double
     let image: Image
+    let isFeatured: Bool
+    let numAvailable: Int
     var specialInstructions: String? = nil // Optional instructions
 }

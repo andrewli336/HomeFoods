@@ -25,19 +25,4 @@ struct OrdersView: View {
     }
 }
 
-struct OrderRow: View {
-    let orderName: String
-    let status: String
-    
-    var body: some View {
-        HStack {
-            Text(orderName)
-                .font(.headline)
-            Spacer()
-            Text(status)
-                .font(.subheadline)
-                .foregroundColor(.gray)
-        }
-        .padding(.vertical, 5)
-    }
-}
+

@@ -1,12 +1,13 @@
 //
-//  FoodItemRow.swift
+//  GrabAndGoFoodItemRow.swift
 //  HomeFoods
 //
-//  Created by Andrew Li on 12/23/24.
+//  Created by Andrew Li on 1/11/25.
 //
+
 import SwiftUI
 
-struct FoodItemRow: View {
+struct GrabAndGoFoodItemRow: View {
     let foodItem: FoodItem
     @State private var showSheet = false // State to control sheet presentation
 
@@ -23,6 +24,16 @@ struct FoodItemRow: View {
                 Text("$\(foodItem.cost, specifier: "%.2f") • \(Image(systemName: "hand.thumbsup")) \(Int(foodItem.rating))% (\(foodItem.numRatings))")
                     .font(.subheadline)
                     .foregroundStyle(.gray)
+                
+                if foodItem.numAvailable > 0 {
+                    Text("\(foodItem.numAvailable) available")
+                        .font(.caption)
+                        .foregroundColor(.green)
+                } else {
+                    Text("Out of stock")
+                        .font(.caption)
+                        .foregroundColor(.red)
+                }
             }
             Spacer()
             
@@ -31,7 +42,7 @@ struct FoodItemRow: View {
                 foodItem.image
                     .resizable()
                     .aspectRatio(contentMode: .fill)
-                    .frame(width: 150, height: 150) // Explicitly set the size to square
+                    .frame(width: 100, height: 100) // Smaller size for less height
                     .cornerRadius(10)
                     .clipped()
                 
@@ -45,14 +56,26 @@ struct FoodItemRow: View {
                                 .fill(Color.white) // White circle background
                                 .frame(width: 25, height: 25) // Circle size
                             Image(systemName: "plus")
-                                .font(.system(size: 10, weight: .semibold))
-                                .foregroundColor(.black) // Green plus sign
+                                .font(.system(size: 12, weight: .semibold))
+                                .foregroundColor(.gray) // Green plus sign
                         }
-                        .offset(x: -10, y: -10) // Adjust position slightly to align with bottom-right corner
+                        .offset(x: -5, y: -5) // Adjust position slightly to align with bottom-right corner
                     }
                 }
+                
+                // Available count in the bottom-left corner of the image
+                if foodItem.numAvailable > 0 {
+                    Text("\(foodItem.numAvailable)")
+                        .font(.caption)
+                        .fontWeight(.bold)
+                        .foregroundColor(.white)
+                        .padding(4)
+                        .background(Color.green.opacity(0.8))
+                        .cornerRadius(5)
+                        .offset(x: -35, y: 35) // Adjust position to bottom-left
+                }
             }
-            .frame(width: 150, height: 150) // Ensure the ZStack matches the image size
+            .frame(width: 100, height: 100) // Ensure the ZStack matches the image size
         }
         .padding()
         .background(
@@ -72,6 +95,5 @@ struct FoodItemRow: View {
 
 #Preview {
     let sampleFood = sampleKitchens[0].foodItems[0]
-    FoodItemRow(foodItem: sampleFood)
-
+    GrabAndGoFoodItemRow(foodItem: sampleFood)
 }
