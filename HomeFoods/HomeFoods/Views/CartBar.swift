@@ -32,7 +32,7 @@ struct CartBar: View {
                     .padding(.leading, 5)
             }
             .padding(10)
-            .background(Color.red)
+            .background(Color.green)
             .cornerRadius(20)
         }
         .padding()
