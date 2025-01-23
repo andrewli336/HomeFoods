@@ -5,18 +5,18 @@
 //  Created by Andrew Li on 12/23/24.
 //
 
-import Foundation
+import FirebaseFirestore
 import SwiftUI
 import MapKit
 
-struct Kitchen: Identifiable {
-    let id = UUID()
+struct Kitchen: Identifiable, Codable {
+    @DocumentID var id: String? // Firestore document ID
     let name: String
     let description: String
     let cuisine: String
     let rating: Double
-    let location: CLLocationCoordinate2D
-    let foodItems: [FoodItem]
-    let image: Image
+    let location: GeoPoint // Use Firestore's GeoPoint
+    let foodItems: [FoodItem] // Nested food items for simplicity
+    let imageUrl: String? // URL to the kitchen's image in Firebase Storage
     let preorderSchedule: PreorderSchedule?
 }

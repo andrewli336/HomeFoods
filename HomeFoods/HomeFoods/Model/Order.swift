@@ -6,14 +6,26 @@
 //
 
 import SwiftUI
+import FirebaseFirestore
 
-struct Order: Identifiable {
-    let id = UUID()
-    let foodItem: FoodItem
-    let quantity: Int
-    var totalCost: Double {
-        return Double(quantity) * foodItem.cost
-    }
-    let specialInstructions: String? // Optional special instructions
+struct Order: Identifiable, Codable {
+    @DocumentID var id: String? // Firestore document ID
+    let userId: String // ID of the user who placed the order
+    let kitchenId: String // Kitchen the order belongs to
     let kitchenName: String
+    let datePlaced: Date // Date when the order was placed
+    let datePickedUp: Date? // Optional, if not yet picked up
+    let foodItems: [OrderedFoodItem] // Simplify FoodItem to OrderedFoodItem for order storage
+    let orderType: OrderType
+    var totalCost: Double {
+        foodItems.reduce(0) { $0 + ($1.price * Double($1.quantity)) }
+    }
+}
+// OrderedFoodItem struct to store only what's needed for orders
+struct OrderedFoodItem: Identifiable, Codable {
+    let id: String // Food item ID
+    let name: String
+    let quantity: Int
+    let price: Double
+    var specialInstructions: String? = nil // Optional instructions
 }

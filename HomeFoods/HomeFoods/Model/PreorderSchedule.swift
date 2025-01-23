@@ -6,29 +6,25 @@
 //
 
 import Foundation
+import FirebaseFirestore
 
-// Represents a PreorderSchedule for a kitchen
-struct PreorderSchedule {
-    let days: [PreorderDay]?
+struct PreorderSchedule: Codable {
+    let days: [String: [PreorderFood]] // Maps Weekday.rawValue to foods
 }
-
 // Represents a specific day in the preorder schedule
 struct PreorderDay {
     let day: Weekday
     let foods: [PreorderFood]
 }
 
-// Represents a food item and its available times
-struct PreorderFood {
-    let foodItem: FoodItem
-    let availableTimes: [TimeInterval] // Times represented in seconds since midnight
+struct PreorderFood: Codable {
+    let foodItemId: String // ID of the food item
+    let availableTimes: [String] // Array of time slots (e.g., ["09:00-11:00", "13:00-15:00"])
 }
 
-// Enum for days of the week
-enum Weekday: String, CaseIterable {
+enum Weekday: String, CaseIterable, Codable {
     case monday, tuesday, wednesday, thursday, friday, saturday, sunday
 
-    // Get display name for the day
     var displayName: String {
         rawValue.capitalized
     }

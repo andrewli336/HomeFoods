@@ -7,9 +7,10 @@
 
 import Foundation
 import SwiftUI
+import FirebaseFirestore
 
-struct FoodItem: Identifiable {
-    let id = UUID()
+struct FoodItem: Identifiable, Codable {
+    @DocumentID var id: String? // Firestore document ID
     let name: String
     let kitchenName: String
     let description: String
@@ -17,8 +18,7 @@ struct FoodItem: Identifiable {
     let rating: Double
     let numRatings: Int
     let cost: Double
-    let image: Image
+    let imageUrl: String // URL to the image in Firebase Storage
     let isFeatured: Bool
     let numAvailable: Int
-    var specialInstructions: String? = nil // Optional instructions
 }

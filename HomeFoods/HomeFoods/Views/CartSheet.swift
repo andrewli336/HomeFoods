@@ -4,7 +4,6 @@
 //
 //  Created by Andrew Li on 12/24/24.
 //
-
 import SwiftUI
 
 struct CartSheet: View {
@@ -18,7 +17,7 @@ struct CartSheet: View {
                 // Confirmation Screen
                 OrderConfirmationView()
             } else {
-                // Pre-calculate the total cost
+                // Calculate the total cost of all orders
                 let totalCost: Double = cartManager.orders.reduce(0) { total, order in
                     total + order.totalCost
                 }
@@ -32,31 +31,40 @@ struct CartSheet: View {
                     ScrollView {
                         VStack(spacing: 15) {
                             ForEach(cartManager.orders) { order in
-                                HStack {
-                                    order.foodItem.image
-                                        .resizable()
-                                        .frame(width: 50, height: 50)
-                                        .cornerRadius(8)
+                                VStack(alignment: .leading, spacing: 10) {
+                                    ForEach(order.foodItems) { foodItem in
+                                        HStack {
+                                            // Image placeholder (Replace with actual image logic)
+                                            Rectangle()
+                                                .fill(Color.gray.opacity(0.3))
+                                                .frame(width: 50, height: 50)
+                                                .cornerRadius(8)
 
-                                    VStack(alignment: .leading, spacing: 5) {
-                                        Text(order.foodItem.name)
-                                            .font(.headline)
-                                        Text(order.foodItem.description)
-                                            .font(.subheadline)
-                                            .foregroundColor(.gray)
-                                        Text("$\(order.foodItem.cost, specifier: "%.2f") x \(order.quantity)")
-                                            .font(.subheadline)
-                                    }
-                                    Spacer()
+                                            VStack(alignment: .leading, spacing: 5) {
+                                                Text(foodItem.name)
+                                                    .font(.headline)
+                                                Text("$\(foodItem.price, specifier: "%.2f") x \(foodItem.quantity)")
+                                                    .font(.subheadline)
+                                                    .foregroundColor(.gray)
 
-                                    Button(action: {
-                                        cartManager.removeOrder(order: order)
-                                    }) {
-                                        Image(systemName: "trash")
-                                            .foregroundColor(.red)
+                                                if let instructions = foodItem.specialInstructions, !instructions.isEmpty {
+                                                    Text("Special: \(instructions)")
+                                                        .font(.caption)
+                                                        .foregroundColor(.blue)
+                                                }
+                                            }
+                                            Spacer()
+
+                                            Button(action: {
+                                                cartManager.removeOrder(order: order)
+                                            }) {
+                                                Image(systemName: "trash")
+                                                    .foregroundColor(.red)
+                                            }
+                                        }
+                                        .padding(.horizontal)
                                     }
                                 }
-                                .padding(.horizontal)
                             }
                         }
                     }

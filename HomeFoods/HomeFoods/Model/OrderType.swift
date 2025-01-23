@@ -7,7 +7,6 @@
 
 import SwiftUI
 
-enum OrderType {
+enum OrderType: String, Codable {
     case grabAndGo, preorder, request
 }
-

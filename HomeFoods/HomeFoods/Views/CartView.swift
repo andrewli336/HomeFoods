@@ -9,25 +9,39 @@ import SwiftUI
 
 struct CartView: View {
     @EnvironmentObject var cartManager: CartManager
-    
+
     var body: some View {
         VStack {
-            List(cartManager.orders) { order in
-                HStack {
-                    Text(order.foodItem.name)
-                    Spacer()
-                    Text("\(order.quantity) x $\(order.foodItem.cost, specifier: "%.2f")")
-                    Text("$\(order.totalCost, specifier: "%.2f")")
-                        .bold()
+            if cartManager.orders.isEmpty {
+                Text("Your cart is empty!")
+                    .font(.title)
+                    .foregroundColor(.gray)
+                    .padding()
+            } else {
+                List {
+                    ForEach(cartManager.orders) { order in
+                        Section(header: Text(order.kitchenName).font(.headline)) {
+                            ForEach(order.foodItems) { foodItem in
+                                HStack {
+                                    Text(foodItem.name)
+                                    Spacer()
+                                    Text("\(foodItem.quantity) x $\(foodItem.price, specifier: "%.2f")")
+                                    Text("$\(Double(foodItem.quantity) * foodItem.price, specifier: "%.2f")")
+                                        .bold()
+                                }
+                            }
+                        }
+                    }
                 }
+
+                Spacer()
+
+                Text("Total: $\(cartManager.orders.reduce(0) { $0 + $1.totalCost }, specifier: "%.2f")")
+                    .font(.title)
+                    .bold()
+                    .padding()
             }
-            
-            Spacer()
-            
-            Text("Total: $\(cartManager.orders.reduce(0) { $0 + $1.totalCost }, specifier: "%.2f")")
-                .font(.title)
-                .bold()
-                .padding()
         }
+        .navigationTitle("Your Cart")
     }
 }
