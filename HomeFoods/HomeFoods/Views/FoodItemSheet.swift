@@ -9,7 +9,6 @@ import SwiftUI
 
 struct FoodItemSheet: View {
     let foodItem: FoodItem
-    let kitchenName: String // Add the kitchen name as a property
     @EnvironmentObject var cartManager: CartManager // Access CartManager
     @Binding var isPresented: Bool // Control sheet visibility
     @State private var quantity: Int = 1
@@ -18,12 +17,23 @@ struct FoodItemSheet: View {
     var body: some View {
         VStack(spacing: 20) {
             // Food image
-            foodItem.image
-                .resizable()
-                .aspectRatio(contentMode: .fill)
-                .frame(height: 200)
-                .clipped()
-            
+            AsyncImage(url: URL(string: foodItem.imageUrl)) { phase in
+                if let image = phase.image {
+                    image
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                        .frame(height: 200)
+                        .clipped()
+                } else if phase.error != nil {
+                    Color.red
+                        .frame(height: 200)
+                        .overlay(Text("Failed to load image").foregroundColor(.white))
+                } else {
+                    ProgressView()
+                        .frame(height: 200)
+                }
+            }
+
             // Title and description
             VStack(alignment: .leading, spacing: 10) {
                 Text(foodItem.name)
@@ -77,7 +87,7 @@ struct FoodItemSheet: View {
                     cartManager.addOrder(
                         foodItem: foodItem,
                         quantity: quantity,
-                        kitchenName: kitchenName, // Pass the kitchen name here
+                        kitchenName: foodItem.kitchenName, // Use foodItem's kitchen name
                         specialInstructions: specialInstructions.isEmpty ? nil : specialInstructions
                     )
                     isPresented = false // Close the sheet
@@ -99,4 +109,10 @@ struct FoodItemSheet: View {
             .background(Color.white)
         }
     }
+}
+
+#Preview {
+    let sampleFood = sampleKitchens[0].foodItems[0]
+    FoodItemSheet(foodItem: sampleFood, isPresented: .constant(true))
+        .environmentObject(CartManager())
 }

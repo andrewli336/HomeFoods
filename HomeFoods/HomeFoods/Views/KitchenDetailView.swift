@@ -45,11 +45,22 @@ struct KitchenImageView: View {
     let kitchen: Kitchen
 
     var body: some View {
-        kitchen.image
-            .resizable()
-            .aspectRatio(contentMode: .fill)
-            .frame(height: 250)
-            .clipped()
+        AsyncImage(url: URL(string: kitchen.imageUrl ?? "")) { phase in
+            if let image = phase.image {
+                image
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .frame(height: 250)
+                    .clipped()
+            } else if phase.error != nil {
+                Color.red
+                    .frame(height: 250)
+                    .overlay(Text("Image not found").foregroundColor(.white))
+            } else {
+                ProgressView()
+                    .frame(height: 250)
+            }
+        }
     }
 }
 

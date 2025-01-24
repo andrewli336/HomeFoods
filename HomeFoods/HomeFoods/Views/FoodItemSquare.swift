@@ -4,7 +4,6 @@
 //
 //  Created by Andrew Li on 1/11/25.
 //
-
 import SwiftUI
 
 struct FoodItemSquare: View {
@@ -15,13 +14,27 @@ struct FoodItemSquare: View {
         VStack(spacing: 15) {
             // Food item image (square)
             ZStack {
-                // Food item image
-                foodItem.image
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
-                    .frame(width: 150, height: 150) // Explicitly set the size to square
-                    .cornerRadius(10)
-                    .clipped()
+                // Food item image using AsyncImage
+                AsyncImage(url: URL(string: foodItem.imageUrl)) { phase in
+                    if let image = phase.image {
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: 150, height: 150)
+                            .cornerRadius(10)
+                            .clipped()
+                    } else if phase.error != nil {
+                        // Placeholder for error
+                        Color.red
+                            .frame(width: 150, height: 150)
+                            .cornerRadius(10)
+                            .overlay(Text("Error").foregroundColor(.white))
+                    } else {
+                        // Placeholder while loading
+                        ProgressView()
+                            .frame(width: 150, height: 150)
+                    }
+                }
                 
                 // White circle with a green plus sign
                 VStack {
@@ -59,10 +72,26 @@ struct FoodItemSquare: View {
             showSheet = true // Show the sheet when tapped
         }
         .sheet(isPresented: $showSheet) {
-            FoodItemSheet(foodItem: foodItem, kitchenName: foodItem.kitchenName, isPresented: $showSheet)
+            FoodItemSheet(foodItem: foodItem, isPresented: $showSheet) // Pass only required parameters
                 .presentationDetents([.large]) // Open the sheet fully by default
         }
     }
+}
+
+#Preview {
+    let sampleFood = FoodItem(
+        name: "Braised Beef Tendon",
+        kitchenName: "Happy & Healthy Kitchen",
+        description: "Tender beef tendon braised in a savory soy-based sauce with aromatic spices.",
+        foodType: "Main Course",
+        rating: 95,
+        numRatings: 16,
+        cost: 12,
+        imageUrl: "https://firebasestorage.googleapis.com/v0/b/YOUR_PROJECT_ID.appspot.com/o/h1.JPG?alt=media",
+        isFeatured: true,
+        numAvailable: 5
+    )
+    FoodItemSquare(foodItem: sampleFood)
 }
 
 #Preview {

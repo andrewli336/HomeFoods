@@ -6,6 +6,7 @@
 //
 import SwiftUI
 
+
 struct FoodItemRow: View {
     let foodItem: FoodItem
     @State private var showSheet = false // State to control sheet presentation
@@ -27,32 +28,46 @@ struct FoodItemRow: View {
             Spacer()
             
             ZStack {
-                // Food item image
-                foodItem.image
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
-                    .frame(width: 150, height: 150) // Explicitly set the size to square
-                    .cornerRadius(10)
-                    .clipped()
+                // Food item image (AsyncImage for URL-based loading)
+                AsyncImage(url: URL(string: foodItem.imageUrl)) { phase in
+                    if let image = phase.image {
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: 150, height: 150)
+                            .cornerRadius(10)
+                            .clipped()
+                    } else if phase.error != nil {
+                        // Placeholder for error
+                        Color.red
+                            .frame(width: 150, height: 150)
+                            .cornerRadius(10)
+                            .overlay(Text("Error").foregroundColor(.white))
+                    } else {
+                        // Placeholder while loading
+                        ProgressView()
+                            .frame(width: 150, height: 150)
+                    }
+                }
                 
                 // White circle with a green plus sign
                 VStack {
-                    Spacer() // Push to the bottom
+                    Spacer()
                     HStack {
-                        Spacer() // Push to the right
+                        Spacer()
                         ZStack {
                             Circle()
-                                .fill(Color.white) // White circle background
-                                .frame(width: 25, height: 25) // Circle size
+                                .fill(Color.white)
+                                .frame(width: 25, height: 25)
                             Image(systemName: "plus")
                                 .font(.system(size: 10, weight: .semibold))
-                                .foregroundColor(.black) // Green plus sign
+                                .foregroundColor(.black)
                         }
-                        .offset(x: -10, y: -10) // Adjust position slightly to align with bottom-right corner
+                        .offset(x: -10, y: -10)
                     }
                 }
             }
-            .frame(width: 150, height: 150) // Ensure the ZStack matches the image size
+            .frame(width: 150, height: 150)
         }
         .padding()
         .background(
@@ -64,7 +79,7 @@ struct FoodItemRow: View {
             showSheet = true // Show the sheet when tapped
         }
         .sheet(isPresented: $showSheet) {
-            FoodItemSheet(foodItem: foodItem, kitchenName: foodItem.kitchenName, isPresented: $showSheet)
+            FoodItemSheet(foodItem: foodItem, isPresented: $showSheet)
                 .presentationDetents([.large]) // Open the sheet fully by default
         }
     }

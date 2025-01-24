@@ -6,19 +6,35 @@
 //
 
 import SwiftUI
+import FirebaseFirestore
 
 struct KitchenCard: View {
     let kitchen: Kitchen
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            // Kitchen image
-            kitchen.image
-                .resizable()
-                .aspectRatio(contentMode: .fill)
-                .frame(height: 160) // Slightly taller for better visuals
-                .clipped()
-                .cornerRadius(15) // Rounded corners for the image
+            // Kitchen image using AsyncImage
+            AsyncImage(url: URL(string: kitchen.imageUrl ?? "")) { phase in
+                if let image = phase.image {
+                    image
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                        .frame(height: 160) // Slightly taller for better visuals
+                        .cornerRadius(15) // Rounded corners for the image
+                        .clipped()
+                } else if phase.error != nil {
+                    // Placeholder for error
+                    Color.red
+                        .frame(height: 160)
+                        .cornerRadius(15)
+                        .overlay(Text("Error").foregroundColor(.white))
+                } else {
+                    // Placeholder while loading
+                    ProgressView()
+                        .frame(height: 160)
+                        .cornerRadius(15)
+                }
+            }
             
             // Kitchen details
             VStack(alignment: .leading, spacing: 8) {
@@ -44,4 +60,9 @@ struct KitchenCard: View {
         )
         .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2) // Soft shadow
     }
+}
+
+#Preview {
+    let sampleKitchen = sampleKitchens[0]
+    KitchenCard(kitchen: sampleKitchen)
 }

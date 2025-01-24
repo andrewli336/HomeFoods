@@ -38,28 +38,25 @@ struct GrabAndGoFoodItemRow: View {
             Spacer()
             
             ZStack {
-                // Food item image
-                foodItem.image
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
-                    .frame(width: 100, height: 100) // Smaller size for less height
-                    .cornerRadius(10)
-                    .clipped()
-                
-                // White circle with a green plus sign
-                VStack {
-                    Spacer() // Push to the bottom
-                    HStack {
-                        Spacer() // Push to the right
-                        ZStack {
-                            Circle()
-                                .fill(Color.white) // White circle background
-                                .frame(width: 25, height: 25) // Circle size
-                            Image(systemName: "plus")
-                                .font(.system(size: 12, weight: .semibold))
-                                .foregroundColor(.gray) // Green plus sign
-                        }
-                        .offset(x: -5, y: -5) // Adjust position slightly to align with bottom-right corner
+                // Food item image using AsyncImage
+                AsyncImage(url: URL(string: foodItem.imageUrl)) { phase in
+                    if let image = phase.image {
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: 100, height: 100) // Smaller size for less height
+                            .cornerRadius(10)
+                            .clipped()
+                    } else if phase.error != nil {
+                        // Placeholder for error
+                        Color.red
+                            .frame(width: 100, height: 100)
+                            .cornerRadius(10)
+                            .overlay(Text("Error").foregroundColor(.white))
+                    } else {
+                        // Placeholder while loading
+                        ProgressView()
+                            .frame(width: 100, height: 100)
                     }
                 }
                 
@@ -74,6 +71,23 @@ struct GrabAndGoFoodItemRow: View {
                         .cornerRadius(5)
                         .offset(x: -35, y: 35) // Adjust position to bottom-left
                 }
+                
+                // White circle with a green plus sign in the bottom-right corner
+                VStack {
+                    Spacer() // Push to the bottom
+                    HStack {
+                        Spacer() // Push to the right
+                        ZStack {
+                            Circle()
+                                .fill(Color.white) // White circle background
+                                .frame(width: 25, height: 25) // Circle size
+                            Image(systemName: "plus")
+                                .font(.system(size: 12, weight: .semibold))
+                                .foregroundColor(.gray) // Gray plus sign
+                        }
+                        .offset(x: -5, y: -5) // Adjust position slightly to align with bottom-right corner
+                    }
+                }
             }
             .frame(width: 100, height: 100) // Ensure the ZStack matches the image size
         }
@@ -87,12 +101,11 @@ struct GrabAndGoFoodItemRow: View {
             showSheet = true // Show the sheet when tapped
         }
         .sheet(isPresented: $showSheet) {
-            FoodItemSheet(foodItem: foodItem, kitchenName: foodItem.kitchenName, isPresented: $showSheet)
+            FoodItemSheet(foodItem: foodItem, isPresented: $showSheet) // Updated to match the FoodItemSheet initializer
                 .presentationDetents([.large]) // Open the sheet fully by default
         }
     }
 }
-
 #Preview {
     let sampleFood = sampleKitchens[0].foodItems[0]
     GrabAndGoFoodItemRow(foodItem: sampleFood)
