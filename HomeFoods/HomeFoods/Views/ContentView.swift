@@ -9,14 +9,14 @@ import SwiftUI
 
 struct ContentView: View {
     @EnvironmentObject var cartManager: CartManager // Access the shared cart manager
-    @State private var isChefMode: Bool = false // Tracks Chef Mode state
+    @EnvironmentObject var appViewModel: AppViewModel
 
     var body: some View {
         ZStack(alignment: .bottom) {
             // Main TabView
             NavigationStack {
                 TabView {
-                    if isChefMode {
+                    if appViewModel.isChefMode {
                         ChefDashboardView()
                             .tabItem {
                                 Label("Dashboard", systemImage: "chart.bar.fill")
@@ -50,7 +50,7 @@ struct ContentView: View {
                         HStack {
                             Image(systemName: "house.fill")
                                 .foregroundColor(.black)
-                            Text(isChefMode ? "Kitchen" : "Home")
+                            Text(appViewModel.isChefMode ? "Kitchen" : "Home")
                                 .font(.headline)
                                 .foregroundColor(.black)
                             Image(systemName: "chevron.down")
@@ -86,11 +86,8 @@ struct ContentView: View {
                                     print("Handle Logout")
                                 })
                                 Divider() // Separator
-                                Toggle(isOn: $isChefMode) {
-                                    Text(isChefMode ? "Chef Mode: On" : "Switch to Chef Mode")
-                                }
-                                .onChange(of: isChefMode) {
-                                    print(isChefMode ? "Switched to Chef Mode" : "Switched to User Mode")
+                                Toggle(isOn: $appViewModel.isChefMode) {
+                                    Text(appViewModel.isChefMode ? "Chef Mode: On" : "Switch to Chef Mode")
                                 }
                             } label: {
                                 Circle()
@@ -107,7 +104,7 @@ struct ContentView: View {
             }
             
             // Persistent CartBar (only for user mode)
-            if !cartManager.orders.isEmpty && !isChefMode {
+            if !cartManager.orders.isEmpty && !appViewModel.isChefMode {
                 CartBar()
             }
         }
@@ -117,6 +114,8 @@ struct ContentView: View {
 
 #Preview {
     let cartManager = CartManager() // Initialize CartManager
+    let appViewModel = AppViewModel()
     ContentView()
         .environmentObject(cartManager)
+        .environmentObject(appViewModel)
 }

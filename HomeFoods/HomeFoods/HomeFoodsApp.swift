@@ -21,11 +21,18 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 @main
 struct HomeFoodsApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
+    @StateObject private var appViewModel = AppViewModel()
     @StateObject private var cartManager = CartManager()
     var body: some Scene {
         WindowGroup {
-            ContentView()
-                .environmentObject(cartManager)
+            if appViewModel.isAuthenticated {
+                ContentView()
+                    .environmentObject(appViewModel)
+                    .environmentObject(cartManager)
+            } else {
+                AuthView()
+                    .environmentObject(appViewModel)
+            }
         }
     }
 }
