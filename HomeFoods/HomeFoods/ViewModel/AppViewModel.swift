@@ -13,6 +13,8 @@ class AppViewModel: ObservableObject {
     @Published var isAuthenticated: Bool = false
     @Published var currentUser: Account? = nil
     @Published var isChefMode: Bool = false
+    @Published var showOnboarding: Bool = false
+    @Published var showTutorialView: Bool = false
 
     private let auth = Auth.auth()
     private let db = Firestore.firestore()
@@ -22,7 +24,7 @@ class AppViewModel: ObservableObject {
         listenToAuthChanges()
     }
     
-    private func listenToAuthChanges() {
+    func listenToAuthChanges() {
         authStateListenerHandle = auth.addStateDidChangeListener { [weak self] _, user in
             guard let self = self else { return }
             if let user = user {
@@ -62,6 +64,7 @@ class AppViewModel: ObservableObject {
                 self?.createUserInFirestore(uid: user.uid, name: name, email: email)
                 self?.isAuthenticated = true
                 self?.fetchCurrentUser(uid: user.uid)
+                self?.showOnboarding = true
                 completion(.success(()))
             }
         }
@@ -116,5 +119,39 @@ class AppViewModel: ObservableObject {
         } catch {
             print("Failed to create user in Firestore: \(error.localizedDescription)")
         }
+    }
+    
+    // MARK: - Save Onboarding Data
+    func saveOnboardingData(favoriteCuisines: [String], howHeardAboutUs: String?, wantsToBeChef: Bool, completion: @escaping (Result<Void, Error>) -> Void) {
+        guard let userId = currentUser?.id else {
+            completion(.failure(NSError(domain: "", code: 401, userInfo: [NSLocalizedDescriptionKey: "User is not authenticated"])))
+            return
+        }
+
+        let data: [String: Any] = [
+            "favoriteCuisines": favoriteCuisines,
+            "howHeardAboutUs": howHeardAboutUs ?? "",
+            "wantsToBeChef": wantsToBeChef
+        ]
+
+        db.collection("accounts").document(userId).updateData(data) { error in
+            if let error = error {
+                completion(.failure(error))
+            } else {
+                // Update the local currentUser object
+                self.currentUser?.favoriteCuisines = favoriteCuisines
+                self.currentUser?.howHeardAboutUs = howHeardAboutUs
+                self.currentUser?.isChef = wantsToBeChef
+                completion(.success(()))
+            }
+        }
+    }
+    func completeOnboarding() {
+        showOnboarding = false
+        showTutorialView = true
+    }
+    func completeTutorial() {
+        showTutorialView = false
+        isAuthenticated = true // Ensure the user is authenticated and navigates to the main app
     }
 }

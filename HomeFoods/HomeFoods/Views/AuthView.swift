@@ -8,6 +8,7 @@
 import SwiftUI
 import FirebaseAuth
 import FirebaseFirestore
+
 struct AuthView: View {
     @EnvironmentObject var appViewModel: AppViewModel
     @State private var email = ""

@@ -74,16 +74,15 @@ struct ContentView: View {
                                     .foregroundColor(.black)
                             }
                             
-                            // Profile Dropdown
                             Menu {
-                                Button("View Profile", action: {
-                                    print("Navigate to Profile")
-                                })
-                                Button("Settings", action: {
-                                    print("Navigate to Settings")
-                                })
+                                NavigationLink(destination: ProfileView().environmentObject(appViewModel)) {
+                                    Text("View Profile")
+                                }
+                                NavigationLink(destination: SettingsView().environmentObject(appViewModel)) {
+                                    Text("Settings")
+                                }
                                 Button("Logout", action: {
-                                    print("Handle Logout")
+                                    appViewModel.logout()
                                 })
                                 Divider() // Separator
                                 Toggle(isOn: $appViewModel.isChefMode) {
