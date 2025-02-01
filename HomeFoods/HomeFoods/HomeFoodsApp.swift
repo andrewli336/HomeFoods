@@ -31,6 +31,10 @@ struct HomeFoodsApp: App {
                 if appViewModel.showOnboarding {
                     OnboardingView()
                         .environmentObject(appViewModel)
+                } else if appViewModel.showChefSetupView {
+                    // Show Chef Setup View after onboarding (if user wants to be a chef)
+                    ChefSetupView()
+                        .environmentObject(appViewModel)
                 } else if appViewModel.showTutorialView {
                     TutorialView()
                         .environmentObject(appViewModel)

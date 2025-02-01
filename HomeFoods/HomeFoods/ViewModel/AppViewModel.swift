@@ -15,6 +15,7 @@ class AppViewModel: ObservableObject {
     @Published var isChefMode: Bool = false
     @Published var showOnboarding: Bool = false
     @Published var showTutorialView: Bool = false
+    @Published var showChefSetupView: Bool = false
 
     private let auth = Auth.auth()
     private let db = Firestore.firestore()
@@ -148,10 +149,43 @@ class AppViewModel: ObservableObject {
     }
     func completeOnboarding() {
         showOnboarding = false
-        showTutorialView = true
+        
+        if currentUser?.isChef == true {
+            // If the user chose to be a chef, show the Chef Setup View instead of the tutorial
+            showChefSetupView = true
+        } else {
+            // Otherwise, show the tutorial
+            showTutorialView = true
+        }
     }
+    
     func completeTutorial() {
         showTutorialView = false
         isAuthenticated = true // Ensure the user is authenticated and navigates to the main app
+    }
+    
+    // Submit Kitchen for Admin Approval
+    func submitChefApplication(kitchenName: String, kitchenDescription: String, completion: @escaping (Bool) -> Void) {
+        guard let userId = currentUser?.id else {
+            completion(false)
+            return
+        }
+
+        let kitchenData: [String: Any] = [
+            "name": kitchenName,
+            "description": kitchenDescription,
+            "ownerId": userId,
+            "isApproved": false // Admin must approve
+        ]
+
+        db.collection("applyingKitchens").document(userId).setData(kitchenData) { error in
+            if let error = error {
+                print("Failed to submit kitchen: \(error.localizedDescription)")
+                completion(false)
+            } else {
+                print("Kitchen submitted for approval.")
+                completion(true)
+            }
+        }
     }
 }
