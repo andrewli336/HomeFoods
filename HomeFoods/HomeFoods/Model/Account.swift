@@ -20,6 +20,7 @@ struct Account: Identifiable, Codable {
     var kitchenId: String? // ID of the kitchen the user manages, if they are a chef
     var favoriteCuisines: [String]? // User's favorite cuisines
     var howHeardAboutUs: String? // How the user heard about the app
+    var address: String?
 }
 
 let availableCuisines = ["Chinese", "Italian", "Mexican", "Indian", "Japanese", "Thai", "French"]

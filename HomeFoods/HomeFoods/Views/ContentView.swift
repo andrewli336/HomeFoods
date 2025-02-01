@@ -56,8 +56,11 @@ struct ContentView: View {
                             Image(systemName: "chevron.down")
                                 .foregroundColor(.black)
                                 .onTapGesture {
-                                    // Handle address location management
-                                    print("Manage location tapped")
+                                    appViewModel.showAddressSelection = true // ✅ Open AddressSelectionView
+                                }
+                                .sheet(isPresented: $appViewModel.showAddressSelection) {
+                                    AddressSelectionView(selectedAddress: $appViewModel.selectedManualAddress)
+                                        .environmentObject(appViewModel) // ✅ Pass environment object
                                 }
                         }
                     }

@@ -10,6 +10,7 @@ import SwiftUI
 struct ChefApprovalPage: View {
     let kitchenName: String
     let kitchenDescription: String
+    let kitchenAddress: String
     var onSubmit: () -> Void
 
     var body: some View {

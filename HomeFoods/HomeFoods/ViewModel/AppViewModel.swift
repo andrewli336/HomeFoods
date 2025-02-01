@@ -8,6 +8,7 @@
 import SwiftUI
 import FirebaseAuth
 import FirebaseFirestore
+import CoreLocation
 
 class AppViewModel: ObservableObject {
     @Published var isAuthenticated: Bool = false
@@ -16,6 +17,12 @@ class AppViewModel: ObservableObject {
     @Published var showOnboarding: Bool = false
     @Published var showTutorialView: Bool = false
     @Published var showChefSetupView: Bool = false
+    @Published var showAddressSelection: Bool = false
+    @Published var selectedManualAddress: String? = nil // ✅ Stores manually selected address
+    
+    @Published var userLocation: CLLocationCoordinate2D?
+    @Published var userAddress: String?
+    private let locationManager = LocationManager()
 
     private let auth = Auth.auth()
     private let db = Firestore.firestore()
@@ -23,6 +30,7 @@ class AppViewModel: ObservableObject {
 
     init() {
         listenToAuthChanges()
+        locationManager.requestLocationPermission()
     }
     
     func listenToAuthChanges() {
@@ -42,6 +50,12 @@ class AppViewModel: ObservableObject {
         if let handle = authStateListenerHandle {
             auth.removeStateDidChangeListener(handle)
         }
+    }
+    
+    func getUserLocation() {
+        locationManager.getCurrentLocation()
+        userLocation = locationManager.userLocation
+        userAddress = locationManager.address
     }
 
     // MARK: - Authentication
@@ -164,27 +178,30 @@ class AppViewModel: ObservableObject {
         isAuthenticated = true // Ensure the user is authenticated and navigates to the main app
     }
     
-    // Submit Kitchen for Admin Approval
-    func submitChefApplication(kitchenName: String, kitchenDescription: String, completion: @escaping (Bool) -> Void) {
+    
+    func submitChefApplication(kitchenName: String, kitchenDescription: String, kitchenAddress: String, completion: @escaping (Bool) -> Void) {
         guard let userId = currentUser?.id else {
             completion(false)
             return
         }
 
-        let kitchenData: [String: Any] = [
+        let applicationData: [String: Any] = [
+            "ownerId": userId,
             "name": kitchenName,
             "description": kitchenDescription,
-            "ownerId": userId,
-            "isApproved": false // Admin must approve
+            "address": kitchenAddress,
+            "status": "pending" // ✅ Pending approval
         ]
 
-        db.collection("applyingKitchens").document(userId).setData(kitchenData) { error in
-            if let error = error {
-                print("Failed to submit kitchen: \(error.localizedDescription)")
-                completion(false)
-            } else {
-                print("Kitchen submitted for approval.")
-                completion(true)
+        db.collection("applyingKitchens").document(userId).setData(applicationData) { error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    print("❌ Failed to submit kitchen: \(error.localizedDescription)")
+                    completion(false)
+                } else {
+                    print("✅ Kitchen submitted for approval!")
+                    completion(true)
+                }
             }
         }
     }

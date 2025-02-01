@@ -1,3 +1,10 @@
+//
+//  ChefSetupView.swift
+//  HomeFoods
+//
+//  Created by Andrew Li on 2/1/25.
+//
+
 import SwiftUI
 
 struct ChefSetupView: View {
@@ -5,6 +12,7 @@ struct ChefSetupView: View {
     @State private var currentPage = 0
     @State private var kitchenName = ""
     @State private var kitchenDescription = ""
+    @State private var kitchenAddress = "" // ✅ Store the final address
     @State private var showError = false
 
     var body: some View {
@@ -14,18 +22,29 @@ struct ChefSetupView: View {
                     ChefIntroPage(nextPage: nextPage)
                         .tag(0)
 
-                    AddKitchenPage(kitchenName: $kitchenName, kitchenDescription: $kitchenDescription, nextPage: nextPage)
-                        .tag(1)
+                    AddKitchenPage(
+                        kitchenName: $kitchenName,
+                        kitchenDescription: $kitchenDescription,
+                        nextPage: { address in
+                            kitchenAddress = address // ✅ Save address
+                            nextPage() // ✅ Call nextPage without arguments
+                        }
+                    )
+                    .tag(1)
 
-                    ChefApprovalPage(kitchenName: kitchenName, kitchenDescription: kitchenDescription, onSubmit: submitForApproval)
-                        .tag(2)
+                    ChefApprovalPage(
+                        kitchenName: kitchenName,
+                        kitchenDescription: kitchenDescription,
+                        kitchenAddress: kitchenAddress, // ✅ Pass address
+                        onSubmit: submitForApproval
+                    )
+                    .tag(2)
 
                     ChefTutorialPage(finishSetup: finishSetup)
                         .tag(3)
                 }
                 .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
 
-                // Page Indicator Dots
                 PageIndicator(currentPage: $currentPage, totalPages: 4)
 
                 Spacer()
@@ -41,7 +60,11 @@ struct ChefSetupView: View {
     }
 
     private func submitForApproval() {
-        appViewModel.submitChefApplication(kitchenName: kitchenName, kitchenDescription: kitchenDescription) { success in
+        appViewModel.submitChefApplication(
+            kitchenName: kitchenName,
+            kitchenDescription: kitchenDescription,
+            kitchenAddress: kitchenAddress // ✅ Submit final address
+        ) { success in
             if success {
                 nextPage()
             } else {
@@ -52,6 +75,6 @@ struct ChefSetupView: View {
 
     private func finishSetup() {
         appViewModel.showChefSetupView = false
-        appViewModel.isChefMode = true // Enable Chef Mode
+        appViewModel.isChefMode = true
     }
 }
