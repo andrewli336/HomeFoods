@@ -14,6 +14,7 @@ class AppViewModel: ObservableObject {
     @Published var isAuthenticated: Bool = false
     @Published var currentUser: Account? = nil
     @Published var isChefMode: Bool = false
+    @Published var isAdminMode: Bool = false
     @Published var showOnboarding: Bool = false
     @Published var showTutorialView: Bool = false
     @Published var showChefSetupView: Bool = false
@@ -27,6 +28,10 @@ class AppViewModel: ObservableObject {
     private let auth = Auth.auth()
     private let db = Firestore.firestore()
     private var authStateListenerHandle: AuthStateDidChangeListenerHandle?
+    
+    var isAdmin: Bool {
+        return currentUser?.isAdmin ?? false
+    }
 
     init() {
         listenToAuthChanges()
@@ -76,14 +81,36 @@ class AppViewModel: ObservableObject {
             if let error = error {
                 completion(.failure(error))
             } else if let user = result?.user {
-                self?.createUserInFirestore(uid: user.uid, name: name, email: email)
-                self?.isAuthenticated = true
-                self?.fetchCurrentUser(uid: user.uid)
-                self?.showOnboarding = true
-                completion(.success(()))
+                self?.checkIfAdmin(email: email) { isAdmin in
+                    self?.createUserInFirestore(uid: user.uid, name: name, email: email, isAdmin: isAdmin)
+                    self?.isAuthenticated = true
+                    self?.fetchCurrentUser(uid: user.uid)
+                    self?.showOnboarding = true
+                    completion(.success(()))
+                }
             }
         }
     }
+    
+    // ✅ Function to check if an email is in the admin list
+    private func checkIfAdmin(email: String, completion: @escaping (Bool) -> Void) {
+        let adminRef = db.collection("config").document("adminEmails")
+        
+        adminRef.getDocument { document, error in
+            if let error = error {
+                print("❌ Error fetching admin list: \(error.localizedDescription)")
+                completion(false) // Assume not an admin if there's an error
+                return
+            }
+            
+            if let data = document?.data(), let emails = data["emails"] as? [String] {
+                completion(emails.contains(email)) // ✅ Check if email is in the admin list
+            } else {
+                completion(false) // Assume not an admin if there's no data
+            }
+        }
+    }
+
 
     func logout() {
         do {
@@ -226,7 +253,8 @@ class AppViewModel: ObservableObject {
         }
     }
 
-    private func createUserInFirestore(uid: String, name: String, email: String) {
+    // ✅ Create user in Firestore with the correct `isAdmin` value
+    private func createUserInFirestore(uid: String, name: String, email: String, isAdmin: Bool) {
         let account = Account(
             id: uid,
             name: name,
@@ -234,15 +262,17 @@ class AppViewModel: ObservableObject {
             profilePictureUrl: nil,
             accountCreationDate: Date(),
             isChef: false,
-            isAdmin: false,
+            wantsToBeChef: false,
+            isAdmin: isAdmin, // ✅ Set based on Firestore check
             kitchenId: nil,
             address: nil
         )
 
         do {
             try db.collection("accounts").document(uid).setData(from: account)
+            print("✅ User created in Firestore with isAdmin: \(isAdmin)")
         } catch {
-            print("Failed to create user in Firestore: \(error.localizedDescription)")
+            print("❌ Failed to create user in Firestore: \(error.localizedDescription)")
         }
     }
     
@@ -266,7 +296,7 @@ class AppViewModel: ObservableObject {
                 // Update the local currentUser object
                 self.currentUser?.favoriteCuisines = favoriteCuisines
                 self.currentUser?.howHeardAboutUs = howHeardAboutUs
-                self.currentUser?.isChef = wantsToBeChef
+                self.currentUser?.wantsToBeChef = wantsToBeChef
                 completion(.success(()))
             }
         }
@@ -274,7 +304,7 @@ class AppViewModel: ObservableObject {
     func completeOnboarding() {
         showOnboarding = false
         
-        if currentUser?.isChef == true {
+        if currentUser?.wantsToBeChef == true {
             // If the user chose to be a chef, show the Chef Setup View instead of the tutorial
             showChefSetupView = true
         } else {
@@ -311,6 +341,77 @@ class AppViewModel: ObservableObject {
                 } else {
                     print("✅ Kitchen submitted for approval!")
                     completion(true)
+                }
+            }
+        }
+    }
+    
+    func fetchPendingKitchens(completion: @escaping ([Kitchen]) -> Void) {
+        db.collection("applyingKitchens").getDocuments { snapshot, error in
+            if let error = error {
+                print("❌ Error fetching pending kitchens: \(error.localizedDescription)")
+                completion([])
+                return
+            }
+
+            let kitchens = snapshot?.documents.compactMap { doc -> Kitchen? in
+                do {
+                    var kitchen = try doc.data(as: Kitchen.self) // ✅ Decode using Firestore Decodable
+                    kitchen.id = doc.documentID // ✅ Assign document ID manually
+                    return kitchen
+                } catch {
+                    print("❌ Error decoding kitchen: \(error.localizedDescription)")
+                    return nil
+                }
+            } ?? []
+
+            completion(kitchens)
+        }
+    }
+
+    func approveKitchen(kitchenId: String, completion: @escaping (Bool) -> Void) {
+        let applyingKitchenRef = db.collection("applyingKitchens").document(kitchenId)
+        let approvedKitchenRef = db.collection("kitchens").document(kitchenId)
+
+        applyingKitchenRef.getDocument { document, error in
+            if let error = error {
+                print("❌ Error fetching applying kitchen: \(error.localizedDescription)")
+                completion(false)
+                return
+            }
+
+            guard let document = document, document.exists else {
+                print("❌ Applying kitchen not found.")
+                completion(false)
+                return
+            }
+
+            // Get kitchen data
+            var kitchenData = document.data() ?? [:]
+            kitchenData["isApproved"] = true
+            kitchenData["rating"] = 0.0 // Default rating
+            kitchenData["location"] = GeoPoint(latitude: 0, longitude: 0) // Placeholder
+            kitchenData["foodItems"] = [] // Empty food list for now
+            kitchenData["imageUrl"] = nil
+            kitchenData["preorderSchedule"] = nil
+
+            // Move kitchen to main "kitchens" collection
+            approvedKitchenRef.setData(kitchenData) { error in
+                if let error = error {
+                    print("❌ Error adding approved kitchen: \(error.localizedDescription)")
+                    completion(false)
+                    return
+                }
+
+                // Remove from "applyingKitchens"
+                applyingKitchenRef.delete { error in
+                    if let error = error {
+                        print("❌ Error removing kitchen from applyingKitchens: \(error.localizedDescription)")
+                        completion(false)
+                    } else {
+                        print("✅ Kitchen approved and moved to kitchens collection")
+                        completion(true)
+                    }
                 }
             }
         }

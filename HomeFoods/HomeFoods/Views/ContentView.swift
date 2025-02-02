@@ -30,14 +30,14 @@ struct ContentView: View {
                             .tabItem {
                                 Label("Orders", systemImage: "tray")
                             }
+                    } else if appViewModel.isAdminMode {
+                        Text("admin")
                     } else {
                         HomeView()
-                            .environmentObject(appViewModel)
                             .tabItem {
                                 Label("Home", systemImage: "house")
                             }
                         ExploreView()
-                            .environmentObject(appViewModel)
                             .tabItem {
                                 Label("Explore", systemImage: "map")
                             }
@@ -90,10 +90,47 @@ struct ContentView: View {
                                 Button("Logout", action: {
                                     appViewModel.logout()
                                 })
-                                Divider() // Separator
-                                Toggle(isOn: $appViewModel.isChefMode) {
-                                    Text(appViewModel.isChefMode ? "Chef Mode: On" : "Switch to Chef Mode")
+                                
+                                if let currentUser = appViewModel.currentUser {
+                                    if currentUser.isChef {
+                                        Divider()
+                                        Toggle(isOn: Binding(
+                                            get: { appViewModel.isChefMode },
+                                            set: { newValue in
+                                                if newValue {
+                                                    appViewModel.isAdminMode = false
+                                                }
+                                                appViewModel.isChefMode = newValue
+                                            }
+                                        )) {
+                                            HStack {
+                                                Image(systemName: appViewModel.isChefMode ? "fork.knife.circle.fill" : "fork.knife.circle")
+                                                    .foregroundColor(appViewModel.isChefMode ? .green : .gray)
+                                                Text(appViewModel.isChefMode ? "Chef Mode: On" : "Switch to Chef Mode")
+                                            }
+                                        }
+                                    }
+
+                                    if currentUser.isAdmin {
+                                        Divider()
+                                        Toggle(isOn: Binding(
+                                            get: { appViewModel.isAdminMode },
+                                            set: { newValue in
+                                                if newValue {
+                                                    appViewModel.isChefMode = false
+                                                }
+                                                appViewModel.isAdminMode = newValue
+                                            }
+                                        )) {
+                                            HStack {
+                                                Image(systemName: appViewModel.isAdminMode ? "gear.circle.fill" : "gear.circle")
+                                                    .foregroundColor(appViewModel.isAdminMode ? .blue : .gray)
+                                                Text(appViewModel.isAdminMode ? "Admin Mode: On" : "Switch to Admin Mode")
+                                            }
+                                        }
+                                    }
                                 }
+                                
                             } label: {
                                 Circle()
                                     .fill(Color.gray.opacity(0.4))

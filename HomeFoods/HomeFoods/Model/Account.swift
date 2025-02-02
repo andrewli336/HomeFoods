@@ -16,6 +16,7 @@ struct Account: Identifiable, Codable {
     var profilePictureUrl: String? // Optional URL for profile picture
     let accountCreationDate: Date // Date when the account was created
     var isChef: Bool // Whether the user is a chef
+    var wantsToBeChef: Bool
     var isAdmin: Bool
     var kitchenId: String? // ID of the kitchen the user manages, if they are a chef
     var favoriteCuisines: [String]? // User's favorite cuisines
