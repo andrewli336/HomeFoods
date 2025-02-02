@@ -86,7 +86,7 @@ struct FoodItemSheet: View {
                 Button(action: {
                     cartManager.addOrder(
                         foodItem: foodItem,
-                        quantity: quantity,
+                        quantity: quantity, kitchenId: foodItem.kitchenId,
                         kitchenName: foodItem.kitchenName, // Use foodItem's kitchen name
                         specialInstructions: specialInstructions.isEmpty ? nil : specialInstructions
                     )

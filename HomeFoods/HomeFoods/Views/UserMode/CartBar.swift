@@ -46,6 +46,7 @@ struct CartBar: View {
         }
         .sheet(isPresented: $showCartSheet) {
             CartSheet(showCartSheet: $showCartSheet) // Pass the state to close the sheet
+                .environmentObject(cartManager)
         }
     }
 }

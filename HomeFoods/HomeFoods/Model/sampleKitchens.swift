@@ -20,7 +20,7 @@ let sampleKitchens = [
             FoodItem(
                 id: "1",
                 name: "Braised Beef Tendon",
-                kitchenName: "Happy & Healthy Kitchen",
+                kitchenName: "Happy & Healthy Kitchen", kitchenId: "a",
                 description: "Tender beef tendon braised in a savory soy-based sauce with aromatic spices.",
                 foodType: "Main Course",
                 rating: 95,
@@ -33,7 +33,7 @@ let sampleKitchens = [
             FoodItem(
                 id: "2",
                 name: "Rice Dumpling with Pork",
-                kitchenName: "Happy & Healthy Kitchen",
+                kitchenName: "Happy & Healthy Kitchen", kitchenId: "a",
                 description: "Sticky rice dumplings stuffed with seasoned pork and wrapped in bamboo leaves.",
                 foodType: "Main Course",
                 rating: 91,
@@ -46,7 +46,7 @@ let sampleKitchens = [
             FoodItem(
                 id: "3",
                 name: "Sweet and Sour Ribs",
-                kitchenName: "Happy & Healthy Kitchen",
+                kitchenName: "Happy & Healthy Kitchen", kitchenId: "a",
                 description: "Juicy pork ribs coated in a sweet and tangy sauce with hints of vinegar.",
                 foodType: "Main Course",
                 rating: 89,
@@ -59,7 +59,7 @@ let sampleKitchens = [
             FoodItem(
                 id: "4",
                 name: "Pearl Meatballs",
-                kitchenName: "Happy & Healthy Kitchen",
+                kitchenName: "Happy & Healthy Kitchen", kitchenId: "a",
                 description: "Delicious pork meatballs rolled in glutinous rice, steamed to perfection.",
                 foodType: "Main Course",
                 rating: 87,
@@ -72,7 +72,7 @@ let sampleKitchens = [
             FoodItem(
                 id: "5",
                 name: "Banh Mi",
-                kitchenName: "Happy & Healthy Kitchen",
+                kitchenName: "Happy & Healthy Kitchen", kitchenId: "a",
                 description: "Vietnamese sandwich filled with pork, lettuce, and pickles.",
                 foodType: "Main Course",
                 rating: 90,
@@ -85,7 +85,7 @@ let sampleKitchens = [
             FoodItem(
                 id: "6",
                 name: "Braised Brisket",
-                kitchenName: "Happy & Healthy Kitchen",
+                kitchenName: "Happy & Healthy Kitchen", kitchenId: "a",
                 description: "Succulent beef brisket slow-cooked in a rich, flavorful broth.",
                 foodType: "Main Course",
                 rating: 88,
@@ -98,7 +98,7 @@ let sampleKitchens = [
             FoodItem(
                 id: "7",
                 name: "Braised Pork Belly",
-                kitchenName: "Happy & Healthy Kitchen",
+                kitchenName: "Happy & Healthy Kitchen", kitchenId: "a",
                 description: "Soft and flavorful pork belly braised in soy sauce and Chinese spices.",
                 foodType: "Main Course",
                 rating: 89,
@@ -111,7 +111,7 @@ let sampleKitchens = [
             FoodItem(
                 id: "8",
                 name: "Crispy Belt Fish",
-                kitchenName: "Happy & Healthy Kitchen",
+                kitchenName: "Happy & Healthy Kitchen", kitchenId: "a",
                 description: "Lightly battered belt fish fried until golden and crispy, served with a dipping sauce.",
                 foodType: "Main Course",
                 rating: 85,
@@ -124,7 +124,7 @@ let sampleKitchens = [
             FoodItem(
                 id: "9",
                 name: "Roasted Pork Feet",
-                kitchenName: "Happy & Healthy Kitchen",
+                kitchenName: "Happy & Healthy Kitchen", kitchenId: "a",
                 description: "Juicy pork feet roasted to crispy perfection with aromatic seasonings.",
                 foodType: "Main Course",
                 rating: 92,
@@ -135,6 +135,70 @@ let sampleKitchens = [
                 numAvailable: 3
             )
         ],
-        imageUrl: "https://firebasestorage.googleapis.com/v0/b/homefoods-16e56.firebasestorage.app/o/h9.JPG?alt=media&token=e848cbcb-8fa7-41d2-b867-17c425c4c1d9", preorderSchedule: nil
+        imageUrl: "https://firebasestorage.googleapis.com/v0/b/homefoods-16e56.firebasestorage.app/o/h9.JPG?alt=media&token=e848cbcb-8fa7-41d2-b867-17c425c4c1d9", preorderSchedule: nil, address: "349"
     )
 ]
+
+
+func uploadSampleKitchensToFirestore() {
+    let db = Firestore.firestore()
+
+    for kitchen in sampleKitchens {
+        let kitchenRef = db.collection("kitchens").document() // 🔥 Generate unique kitchen ID
+        let kitchenId = kitchenRef.documentID // Extract the generated ID
+
+        // ✅ Create a structured Firestore document
+        let newKitchen = [
+            "name": kitchen.name,
+            "description": kitchen.description,
+            "cuisine": kitchen.cuisine,
+            "rating": kitchen.rating,
+            "location": [
+                "latitude": kitchen.location.latitude,
+                "longitude": kitchen.location.longitude
+            ],
+            "imageUrl": kitchen.imageUrl ?? "",
+            "preorderSchedule": kitchen.preorderSchedule as Any,
+            "address": kitchen.address
+        ] as [String : Any]
+
+        // ✅ Upload the kitchen WITHOUT foodItems (since they go in a subcollection)
+        kitchenRef.setData(newKitchen) { error in
+            if let error = error {
+                print("❌ Error uploading kitchen \(kitchen.name): \(error.localizedDescription)")
+                return
+            }
+
+            print("✅ Successfully uploaded kitchen: \(kitchen.name) with ID: \(kitchenId)")
+
+            // ✅ Upload foodItems as a subcollection
+            for foodItem in kitchen.foodItems {
+                let foodItemRef = kitchenRef.collection("foodItems").document()
+
+                let newFoodItem = [
+                    "id": foodItemRef.documentID, // ✅ Firestore-generated ID
+                    "name": foodItem.name,
+                    "kitchenId": kitchenId, // ✅ Assign the correct kitchenId
+                    "kitchenName": kitchen.name,
+                    "description": foodItem.description,
+                    "foodType": foodItem.foodType,
+                    "rating": foodItem.rating,
+                    "numRatings": foodItem.numRatings,
+                    "cost": foodItem.cost,
+                    "imageUrl": foodItem.imageUrl,
+                    "isFeatured": foodItem.isFeatured,
+                    "numAvailable": foodItem.numAvailable
+                ] as [String : Any]
+
+                foodItemRef.setData(newFoodItem) { error in
+                    if let error = error {
+                        print("❌ Error uploading food item \(foodItem.name): \(error.localizedDescription)")
+                    } else {
+                        print("✅ Successfully uploaded food item: \(foodItem.name) under \(kitchen.name)")
+                    }
+                }
+            }
+        }
+    }
+}
+

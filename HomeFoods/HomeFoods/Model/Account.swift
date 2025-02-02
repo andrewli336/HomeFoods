@@ -11,9 +11,9 @@ import FirebaseFirestore
 
 struct Account: Identifiable, Codable {
     @DocumentID var id: String? // Firestore document ID
-    let name: String // User's display name
-    let email: String // User's email address
-    let profilePictureUrl: String? // Optional URL for profile picture
+    var name: String // User's display name
+    var email: String // User's email address
+    var profilePictureUrl: String? // Optional URL for profile picture
     let accountCreationDate: Date // Date when the account was created
     var isChef: Bool // Whether the user is a chef
     var isAdmin: Bool

@@ -8,37 +8,36 @@
 import SwiftUI
 
 struct HomeView: View {
+    @EnvironmentObject var appViewModel: AppViewModel
     @EnvironmentObject var cartManager: CartManager // Access CartManager for cart state
 
     var body: some View {
-        ZStack(alignment: .bottom) {
-            // Main scrolling content
-            ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
-                    // Chinese Category
-                    CategorySection(
-                        title: "Chinese Cuisine",
-                        kitchens: sampleKitchens.filter { $0.cuisine == "Chinese" }
-                    )
+        NavigationStack {
+            VStack(alignment: .leading) {
+                Text("Discover Kitchens")
+                    .font(.largeTitle)
+                    .bold()
+                    .padding(.leading)
 
-                    // Vegan Category
-                    CategorySection(
-                        title: "Vegan Delights",
-                        kitchens: sampleKitchens.filter { $0.cuisine == "Vegan" }
-                    )
-
-                    // Desserts Category
-                    CategorySection(
-                        title: "Sweet Treats",
-                        kitchens: sampleKitchens.filter { $0.cuisine == "Desserts" }
-                    )
+                ScrollView(.horizontal, showsIndicators: false) {
+                    LazyHStack(spacing: 15) {
+                        ForEach(appViewModel.kitchens) { kitchen in
+                            NavigationLink(destination: KitchenDetailView(kitchen: kitchen)) {
+                                KitchenCard(kitchen: kitchen)
+                            }
+                        }
+                    }
+                    .padding()
                 }
-                .padding(.vertical)
+            }
+            .onAppear {
+                appViewModel.fetchKitchens() // ✅ Fetch all kitchens
             }
             .navigationTitle("Home")
         }
     }
 }
+
 
 struct CategorySection: View {
     @EnvironmentObject var cartManager: CartManager // Access CartManager for cart state

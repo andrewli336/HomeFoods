@@ -11,12 +11,13 @@ import MapKit
 
 struct Kitchen: Identifiable, Codable {
     @DocumentID var id: String? // Firestore document ID
-    let name: String
-    let description: String
-    let cuisine: String
-    let rating: Double
-    let location: GeoPoint // Use Firestore's GeoPoint
-    let foodItems: [FoodItem] // Nested food items for simplicity
-    let imageUrl: String? // URL to the kitchen's image in Firebase Storage
-    let preorderSchedule: PreorderSchedule?
+    var name: String
+    var description: String
+    var cuisine: String
+    var rating: Double
+    var location: GeoPoint // Use Firestore's GeoPoint
+    var foodItems: [FoodItem] // Nested food items for simplicity
+    var imageUrl: String? // URL to the kitchen's image in Firebase Storage
+    var preorderSchedule: PreorderSchedule?
+    var address: String?
 }

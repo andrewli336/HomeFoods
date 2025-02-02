@@ -82,6 +82,7 @@ struct FoodItemSquare: View {
     let sampleFood = FoodItem(
         name: "Braised Beef Tendon",
         kitchenName: "Happy & Healthy Kitchen",
+        kitchenId: "O",
         description: "Tender beef tendon braised in a savory soy-based sauce with aromatic spices.",
         foodType: "Main Course",
         rating: 95,

@@ -13,6 +13,7 @@ struct FoodItem: Identifiable, Codable {
     @DocumentID var id: String? // Firestore document ID
     let name: String
     let kitchenName: String
+    let kitchenId: String
     let description: String
     let foodType: String
     let rating: Double

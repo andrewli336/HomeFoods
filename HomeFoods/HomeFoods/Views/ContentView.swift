@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import FirebaseFirestore
 
 struct ContentView: View {
     @EnvironmentObject var cartManager: CartManager // Access the shared cart manager
@@ -31,10 +32,12 @@ struct ContentView: View {
                             }
                     } else {
                         HomeView()
+                            .environmentObject(appViewModel)
                             .tabItem {
                                 Label("Home", systemImage: "house")
                             }
                         ExploreView()
+                            .environmentObject(appViewModel)
                             .tabItem {
                                 Label("Explore", systemImage: "map")
                             }
@@ -112,6 +115,7 @@ struct ContentView: View {
         }
         .edgesIgnoringSafeArea(.bottom) // Ensure CartBar stays at the bottom
     }
+    
 }
 
 #Preview {
