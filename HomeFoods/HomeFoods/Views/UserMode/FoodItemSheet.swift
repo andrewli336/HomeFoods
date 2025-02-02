@@ -9,14 +9,14 @@ import SwiftUI
 
 struct FoodItemSheet: View {
     let foodItem: FoodItem
-    @EnvironmentObject var cartManager: CartManager // Access CartManager
-    @Binding var isPresented: Bool // Control sheet visibility
+    @EnvironmentObject var appViewModel: AppViewModel // ✅ Access OrderViewModel via AppViewModel
+    @Binding var isPresented: Bool // ✅ Control sheet visibility
     @State private var quantity: Int = 1
     @State private var specialInstructions: String = ""
 
     var body: some View {
         VStack(spacing: 20) {
-            // Food image
+            // 📌 Food Image
             AsyncImage(url: URL(string: foodItem.imageUrl)) { phase in
                 if let image = phase.image {
                     image
@@ -34,7 +34,7 @@ struct FoodItemSheet: View {
                 }
             }
 
-            // Title and description
+            // 📌 Title and Description
             VStack(alignment: .leading, spacing: 10) {
                 Text(foodItem.name)
                     .font(.title)
@@ -47,7 +47,7 @@ struct FoodItemSheet: View {
 
             Divider()
 
-            // Preferences
+            // 📌 Preferences
             VStack(alignment: .leading, spacing: 10) {
                 Text("Preferences")
                     .font(.headline)
@@ -56,7 +56,7 @@ struct FoodItemSheet: View {
             }
             .padding(.horizontal)
 
-            // Counter
+            // 📌 Quantity Selector
             HStack {
                 Button(action: {
                     if quantity > 1 { quantity -= 1 }
@@ -80,17 +80,19 @@ struct FoodItemSheet: View {
 
             Spacer()
 
-            // Add to Order Button
+            // 📌 Add to Order Button
             VStack {
                 Divider()
                 Button(action: {
-                    cartManager.addOrder(
+                    // ✅ Call `addToCart` with separate parameters instead of passing an `Order`
+                    appViewModel.orderViewModel.addToCart(
                         foodItem: foodItem,
-                        quantity: quantity, kitchenId: foodItem.kitchenId,
-                        kitchenName: foodItem.kitchenName, // Use foodItem's kitchen name
+                        quantity: quantity,
+                        kitchenId: foodItem.kitchenId,
+                        kitchenName: foodItem.kitchenName,
                         specialInstructions: specialInstructions.isEmpty ? nil : specialInstructions
                     )
-                    isPresented = false // Close the sheet
+                    isPresented = false // ✅ Close the sheet
                 }) {
                     HStack {
                         Text("Add to Order")
@@ -111,8 +113,9 @@ struct FoodItemSheet: View {
     }
 }
 
+// ✅ Updated Preview
 #Preview {
     let sampleFood = sampleKitchens[0].foodItems[0]
     FoodItemSheet(foodItem: sampleFood, isPresented: .constant(true))
-        .environmentObject(CartManager())
+        .environmentObject(AppViewModel()) // ✅ Use AppViewModel instead of CartManager
 }

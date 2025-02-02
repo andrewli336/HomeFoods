@@ -9,7 +9,6 @@ import SwiftUI
 import FirebaseFirestore
 
 struct ContentView: View {
-    @EnvironmentObject var cartManager: CartManager // Access the shared cart manager
     @EnvironmentObject var appViewModel: AppViewModel
 
     var body: some View {
@@ -109,7 +108,7 @@ struct ContentView: View {
             }
             
             // Persistent CartBar (only for user mode)
-            if !cartManager.orders.isEmpty && !appViewModel.isChefMode {
+            if !appViewModel.orderViewModel.cartOrders.isEmpty && !appViewModel.isChefMode {
                 CartBar()
             }
         }
@@ -119,9 +118,8 @@ struct ContentView: View {
 }
 
 #Preview {
-    let cartManager = CartManager() // Initialize CartManager
     let appViewModel = AppViewModel()
     ContentView()
-        .environmentObject(cartManager)
         .environmentObject(appViewModel)
+    
 }

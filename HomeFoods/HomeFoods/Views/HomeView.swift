@@ -9,7 +9,6 @@ import SwiftUI
 
 struct HomeView: View {
     @EnvironmentObject var appViewModel: AppViewModel
-    @EnvironmentObject var cartManager: CartManager // Access CartManager for cart state
 
     var body: some View {
         NavigationStack {
@@ -40,7 +39,6 @@ struct HomeView: View {
 
 
 struct CategorySection: View {
-    @EnvironmentObject var cartManager: CartManager // Access CartManager for cart state
     let title: String
     let kitchens: [Kitchen]
     

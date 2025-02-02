@@ -10,7 +10,6 @@ import MapKit
 
 struct KitchenDetailView: View {
     let kitchen: Kitchen
-    @EnvironmentObject var cartManager: CartManager
     
     @State private var selectedTab: OrderType = .grabAndGo
 
@@ -144,8 +143,6 @@ struct OrderTabsView: View {
 
 
 #Preview {
-    let cartManager = CartManager()
     let sampleKitchen = sampleKitchens[0]
     KitchenDetailView(kitchen: sampleKitchen)
-        .environmentObject(cartManager)
 }

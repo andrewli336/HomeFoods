@@ -22,7 +22,6 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 struct HomeFoodsApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
     @StateObject private var appViewModel = AppViewModel()
-    @StateObject private var cartManager = CartManager()
     
     
     var body: some Scene {
@@ -41,7 +40,6 @@ struct HomeFoodsApp: App {
                 } else {
                     ContentView()
                         .environmentObject(appViewModel)
-                        .environmentObject(cartManager)
                 }
             } else {
                 AuthView()

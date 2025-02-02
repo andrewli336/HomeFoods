@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct OrderConfirmationView: View {
+    @Environment(\.dismiss) var dismiss // ✅ Enables dismissal of the current view
+
     var body: some View {
         VStack(spacing: 20) {
             Image(systemName: "checkmark.circle.fill")
@@ -26,7 +28,7 @@ struct OrderConfirmationView: View {
             Spacer()
 
             Button(action: {
-                // Handle any post-confirmation actions, like returning to the home screen
+                dismiss() // ✅ Dismiss the confirmation screen and go back to Home
             }) {
                 Text("Back to Home")
                     .frame(maxWidth: .infinity)
