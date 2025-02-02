@@ -38,6 +38,7 @@ class OrderViewModel: ObservableObject {
                     name: foodItem.name,
                     quantity: quantity,
                     price: foodItem.cost,
+                    imageUrl: foodItem.imageUrl,
                     specialInstructions: specialInstructions
                 )
             ],

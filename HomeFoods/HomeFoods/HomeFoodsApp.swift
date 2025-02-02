@@ -22,7 +22,7 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 struct HomeFoodsApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
     @StateObject private var appViewModel = AppViewModel()
-    
+    @StateObject private var orderViewModel = OrderViewModel()
     
     var body: some Scene {
         WindowGroup {
@@ -40,6 +40,7 @@ struct HomeFoodsApp: App {
                 } else {
                     ContentView()
                         .environmentObject(appViewModel)
+                        .environmentObject(orderViewModel)
                 }
             } else {
                 AuthView()

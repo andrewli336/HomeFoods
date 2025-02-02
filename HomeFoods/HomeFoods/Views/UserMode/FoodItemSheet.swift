@@ -9,7 +9,7 @@ import SwiftUI
 
 struct FoodItemSheet: View {
     let foodItem: FoodItem
-    @EnvironmentObject var appViewModel: AppViewModel // ✅ Access OrderViewModel via AppViewModel
+    @EnvironmentObject var orderViewModel: OrderViewModel
     @Binding var isPresented: Bool // ✅ Control sheet visibility
     @State private var quantity: Int = 1
     @State private var specialInstructions: String = ""
@@ -85,7 +85,7 @@ struct FoodItemSheet: View {
                 Divider()
                 Button(action: {
                     // ✅ Call `addToCart` with separate parameters instead of passing an `Order`
-                    appViewModel.orderViewModel.addToCart(
+                    orderViewModel.addToCart(
                         foodItem: foodItem,
                         quantity: quantity,
                         kitchenId: foodItem.kitchenId,
@@ -111,11 +111,4 @@ struct FoodItemSheet: View {
             .background(Color.white)
         }
     }
-}
-
-// ✅ Updated Preview
-#Preview {
-    let sampleFood = sampleKitchens[0].foodItems[0]
-    FoodItemSheet(foodItem: sampleFood, isPresented: .constant(true))
-        .environmentObject(AppViewModel()) // ✅ Use AppViewModel instead of CartManager
 }

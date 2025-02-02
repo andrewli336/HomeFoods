@@ -19,9 +19,6 @@ class AppViewModel: ObservableObject {
     @Published var showChefSetupView: Bool = false
     @Published var showAddressSelection: Bool = false
     @Published var selectedManualAddress: String? = nil // ✅ Stores manually selected address
-    @Published var orderViewModel = OrderViewModel() {
-        didSet { objectWillChange.send() } // ✅ Notify SwiftUI of changes
-    }
     @Published var userLocation: CLLocationCoordinate2D?
     @Published var userAddress: String?
     @Published var kitchens: [Kitchen] = [] // ✅ Stores fetched kitchens

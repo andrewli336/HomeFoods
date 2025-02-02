@@ -9,6 +9,7 @@ import FirebaseFirestore
 
 struct CartSheet: View {
     @EnvironmentObject var appViewModel: AppViewModel
+    @EnvironmentObject var orderViewModel: OrderViewModel
     @Binding var showCartSheet: Bool
     @State private var showConfirmation = false
     @State private var isPlacingOrder = false
@@ -18,87 +19,23 @@ struct CartSheet: View {
             if showConfirmation {
                 OrderConfirmationView()
             } else {
-                let totalCost: Double = appViewModel.orderViewModel.cartOrders.reduce(0) { total, order in
-                    total + order.totalCost
-                }
-
                 VStack(alignment: .leading, spacing: 20) {
-                    Text(appViewModel.orderViewModel.cartOrders.first?.kitchenName ?? "Your Cart")
+                    Text(orderViewModel.cartOrders.first?.kitchenName ?? "Your Cart")
                         .font(.largeTitle)
                         .bold()
                         .padding(.horizontal)
 
-                    ScrollView {
-                        VStack(spacing: 15) {
-                            ForEach(appViewModel.orderViewModel.cartOrders) { order in
-                                VStack(alignment: .leading, spacing: 10) {
-                                    ForEach(order.foodItems) { foodItem in
-                                        HStack {
-                                            Rectangle()
-                                                .fill(Color.gray.opacity(0.3))
-                                                .frame(width: 50, height: 50)
-                                                .cornerRadius(8)
-
-                                            VStack(alignment: .leading, spacing: 5) {
-                                                Text(foodItem.name)
-                                                    .font(.headline)
-                                                Text("$\(foodItem.price, specifier: "%.2f") x \(foodItem.quantity)")
-                                                    .font(.subheadline)
-                                                    .foregroundColor(.gray)
-
-                                                if let instructions = foodItem.specialInstructions, !instructions.isEmpty {
-                                                    Text("Special: \(instructions)")
-                                                        .font(.caption)
-                                                        .foregroundColor(.blue)
-                                                }
-                                            }
-                                            Spacer()
-
-                                            Button(action: {
-                                                appViewModel.orderViewModel.removeFromCart(order: order)
-                                            }) {
-                                                Image(systemName: "trash")
-                                                    .foregroundColor(.red)
-                                            }
-                                        }
-                                        .padding(.horizontal)
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    // ✅ Order List
+                    CartOrderListView()
 
                     Spacer()
 
-                    VStack {
-                        Divider()
-                        HStack {
-                            Text("Total")
-                                .font(.title3)
-                            Spacer()
-                            Text("$\(totalCost, specifier: "%.2f")")
-                                .font(.title3)
-                                .bold()
-                        }
-                        .padding(.horizontal)
-
-                        Button(action: placeOrder) {
-                            HStack {
-                                if isPlacingOrder {
-                                    ProgressView()
-                                }
-                                Text("Place Order")
-                            }
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color.red)
-                            .foregroundColor(.white)
-                            .cornerRadius(10)
-                            .padding(.horizontal)
-                        }
-                        .disabled(isPlacingOrder)
-                    }
-                    .padding(.bottom, 10)
+                    // ✅ Checkout Section
+                    CartCheckoutView(
+                        totalCost: orderViewModel.cartOrders.reduce(0) { $0 + $1.totalCost },
+                        isPlacingOrder: $isPlacingOrder,
+                        placeOrder: placeOrder
+                    )
                 }
                 .navigationTitle("Your Cart")
                 .navigationBarTitleDisplayMode(.inline)
@@ -121,16 +58,122 @@ struct CartSheet: View {
 
         isPlacingOrder = true
 
-        appViewModel.orderViewModel.placeOrder(userId: userId) { success in
+        orderViewModel.placeOrder(userId: userId) { success in
             DispatchQueue.main.async {
                 isPlacingOrder = false
                 if success {
-                    appViewModel.orderViewModel.clearCart() // ✅ Clear cart after successful order
+                    orderViewModel.clearCart() // ✅ Clear cart after successful order
                     showConfirmation = true
                 } else {
                     print("❌ Failed to place order")
                 }
             }
         }
+    }
+}
+
+// ✅ Extracted Order List View
+struct CartOrderListView: View {
+    @EnvironmentObject var orderViewModel: OrderViewModel
+
+    var body: some View {
+        ScrollView {
+            VStack(spacing: 15) {
+                ForEach(orderViewModel.cartOrders) { order in
+                    VStack(alignment: .leading, spacing: 10) {
+                        ForEach(order.foodItems) { foodItem in
+                            CartOrderItemView(foodItem: foodItem, order: order)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// ✅ Extracted Order Item Row
+struct CartOrderItemView: View {
+    let foodItem: OrderedFoodItem
+    let order: Order
+    @EnvironmentObject var orderViewModel: OrderViewModel
+
+    var body: some View {
+        HStack {
+            AsyncImage(url: URL(string: foodItem.imageUrl)) { phase in
+                if let image = phase.image {
+                    image
+                        .resizable()
+                        .frame(width: 50, height: 50)
+                        .cornerRadius(8)
+                } else {
+                    Color.gray.opacity(0.3)
+                        .frame(width: 50, height: 50)
+                        .cornerRadius(8)
+                        .overlay(Text("N/A").foregroundColor(.white))
+                }
+            }
+
+            VStack(alignment: .leading, spacing: 5) {
+                Text(foodItem.name)
+                    .font(.headline)
+                Text("$\(foodItem.price, specifier: "%.2f") x \(foodItem.quantity)")
+                    .font(.subheadline)
+                    .foregroundColor(.gray)
+
+                if let instructions = foodItem.specialInstructions, !instructions.isEmpty {
+                    Text("Special: \(instructions)")
+                        .font(.caption)
+                        .foregroundColor(.blue)
+                }
+            }
+            Spacer()
+
+            Button(action: {
+                orderViewModel.removeFromCart(order: order)
+            }) {
+                Image(systemName: "trash")
+                    .foregroundColor(.red)
+            }
+        }
+        .padding(.horizontal)
+    }
+}
+
+// ✅ Extracted Checkout View
+struct CartCheckoutView: View {
+    let totalCost: Double
+    @Binding var isPlacingOrder: Bool
+    let placeOrder: () -> Void
+
+    var body: some View {
+        VStack {
+            Divider()
+            HStack {
+                Text("Total")
+                    .font(.title3)
+                Spacer()
+                Text("$\(totalCost, specifier: "%.2f")")
+                    .font(.title3)
+                    .bold()
+            }
+            .padding(.horizontal)
+
+            Button(action: placeOrder) {
+                HStack {
+                    if isPlacingOrder {
+                        ProgressView()
+                    }
+                    Text("Place Order")
+                }
+                .frame(maxWidth: .infinity)
+                .padding()
+                .background(Color.red)
+                .foregroundColor(.white)
+                .cornerRadius(10)
+                .padding(.horizontal)
+            }
+            .disabled(isPlacingOrder)
+        }
+        .padding(.bottom, 10)
     }
 }

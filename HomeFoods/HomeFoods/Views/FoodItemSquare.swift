@@ -77,25 +77,3 @@ struct FoodItemSquare: View {
         }
     }
 }
-
-#Preview {
-    let sampleFood = FoodItem(
-        name: "Braised Beef Tendon",
-        kitchenName: "Happy & Healthy Kitchen",
-        kitchenId: "O",
-        description: "Tender beef tendon braised in a savory soy-based sauce with aromatic spices.",
-        foodType: "Main Course",
-        rating: 95,
-        numRatings: 16,
-        cost: 12,
-        imageUrl: "https://firebasestorage.googleapis.com/v0/b/YOUR_PROJECT_ID.appspot.com/o/h1.JPG?alt=media",
-        isFeatured: true,
-        numAvailable: 5
-    )
-    FoodItemSquare(foodItem: sampleFood)
-}
-
-#Preview {
-    let sampleFood = sampleKitchens[0].foodItems[0]
-    FoodItemSquare(foodItem: sampleFood)
-}

@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct CartBar: View {
-    @EnvironmentObject var appViewModel: AppViewModel // Access orderViewModel via appViewModel
+    @EnvironmentObject var orderViewModel: OrderViewModel
     @State private var showCartSheet = false // State to control the sheet
 
     var body: some View {
@@ -20,14 +20,14 @@ struct CartBar: View {
             
             Spacer()
             
-            Text("$\(appViewModel.orderViewModel.cartOrders.reduce(0) { $0 + $1.totalCost }, specifier: "%.2f")")
+            Text("$\(orderViewModel.cartOrders.reduce(0) { $0 + $1.totalCost }, specifier: "%.2f")")
                 .font(.headline)
                 .foregroundColor(.white)
             
             HStack(spacing: 5) {
                 Image(systemName: "cart.fill")
                     .foregroundColor(.white)
-                Text("\(appViewModel.orderViewModel.cartOrders.count)") // Item count
+                Text("\(orderViewModel.cartOrders.count)") // Item count
                     .foregroundColor(.white)
                     .padding(.leading, 5)
             }
@@ -46,7 +46,6 @@ struct CartBar: View {
         }
         .sheet(isPresented: $showCartSheet) {
             CartSheet(showCartSheet: $showCartSheet) // Pass the state to close the sheet
-                .environmentObject(appViewModel) // ✅ Updated to use OrderViewModel
         }
     }
 }

@@ -21,11 +21,13 @@ struct Order: Identifiable, Codable {
         foodItems.reduce(0) { $0 + ($1.price * Double($1.quantity)) }
     }
 }
-// OrderedFoodItem struct to store only what's needed for orders
+
 struct OrderedFoodItem: Identifiable, Codable {
     let id: String // Food item ID
     let name: String
     let quantity: Int
     let price: Double
+    let imageUrl: String
     var specialInstructions: String? = nil // Optional instructions
 }
+

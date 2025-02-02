@@ -10,6 +10,7 @@ import FirebaseFirestore
 
 struct ContentView: View {
     @EnvironmentObject var appViewModel: AppViewModel
+    @EnvironmentObject var orderViewModel: OrderViewModel
 
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -108,18 +109,11 @@ struct ContentView: View {
             }
             
             // Persistent CartBar (only for user mode)
-            if !appViewModel.orderViewModel.cartOrders.isEmpty && !appViewModel.isChefMode {
+            if !orderViewModel.cartOrders.isEmpty && !appViewModel.isChefMode {
                 CartBar()
             }
         }
         .edgesIgnoringSafeArea(.bottom) // Ensure CartBar stays at the bottom
     }
-    
-}
-
-#Preview {
-    let appViewModel = AppViewModel()
-    ContentView()
-        .environmentObject(appViewModel)
     
 }
