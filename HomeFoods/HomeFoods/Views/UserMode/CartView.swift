@@ -12,16 +12,16 @@ struct CartView: View {
 
     var body: some View {
         VStack {
-            if orderViewModel.cartOrders.isEmpty {
+            if orderViewModel.isCartEmpty() {
                 Text("Your cart is empty!")
                     .font(.title)
                     .foregroundColor(.gray)
                     .padding()
             } else {
                 List {
-                    ForEach(orderViewModel.cartOrders) { order in
+                    if let order = orderViewModel.cartOrder {
                         Section(header: Text(order.kitchenName).font(.headline)) {
-                            ForEach(order.foodItems) { foodItem in
+                            ForEach(order.orderedFoodItems, id: \.id) { foodItem in
                                 HStack {
                                     Text(foodItem.name)
                                     Spacer()
@@ -36,7 +36,7 @@ struct CartView: View {
 
                 Spacer()
 
-                Text("Total: $\(orderViewModel.cartOrders.reduce(0) { $0 + $1.totalCost }, specifier: "%.2f")")
+                Text("Total: $\(orderViewModel.cartOrder?.totalCost ?? 0, specifier: "%.2f")")
                     .font(.title)
                     .bold()
                     .padding()

@@ -11,59 +11,115 @@ import FirebaseFirestore
 class OrderViewModel: ObservableObject {
     @Published var userOrders: [Order] = [] // User's order history
     @Published var kitchenOrders: [Order] = [] // Kitchen's order history
-    @Published var cartOrders: [Order] = [] {
-        didSet { objectWillChange.send() } // ✅ Force UI update
-    }
-
+    @Published var cartOrder: Order? = nil // ✅ Only one cart order at a time
 
     private let db = Firestore.firestore()
+    
+    // ✅ Computed property: Current orders (Not yet picked up)
+    var currentOrders: [Order] {
+        userOrders.filter { $0.datePickedUp == nil }
+    }
+
+    // ✅ Computed property: Past orders (Already picked up)
+    var pastOrders: [Order] {
+        userOrders.filter { $0.datePickedUp != nil }
+    }
+
+    // ✅ Fetch orders for the user
+    func fetchUserOrders(for userId: String) {
+        db.collection("users").document(userId).collection("orders")
+            .order(by: "datePlaced", descending: true)
+            .getDocuments { [weak self] snapshot, error in
+                if let error = error {
+                    print("❌ Error fetching user orders: \(error.localizedDescription)")
+                    return
+                }
+                DispatchQueue.main.async {
+                    self?.userOrders = snapshot?.documents.compactMap { try? $0.data(as: Order.self) } ?? []
+                    print("✅ Successfully fetched \(self?.userOrders.count ?? 0) orders")
+                }
+            }
+    }
+    
+    func isCartEmpty() -> Bool {
+        return cartOrder?.orderedFoodItems.isEmpty ?? true
+    }
 
     // ✅ Add item to cart
-    func addToCart(foodItem: FoodItem, quantity: Int, kitchenId: String, kitchenName: String, specialInstructions: String?) {
+    func addToCart(foodItem: FoodItem, quantity: Int, specialInstructions: String?) {
         guard let foodItemId = foodItem.id else {
             print("❌ Error: Food item does not have a valid ID")
             return
         }
 
-        let newOrder = Order(
-            id: UUID().uuidString, // Temporary local ID
-            userId: "", // Set when user logs in
-            kitchenId: kitchenId,
-            kitchenName: kitchenName,
-            datePlaced: Date(),
-            datePickedUp: nil,
-            foodItems: [
-                OrderedFoodItem(
-                    id: foodItemId,
-                    name: foodItem.name,
-                    quantity: quantity,
-                    price: foodItem.cost,
-                    imageUrl: foodItem.imageUrl,
-                    specialInstructions: specialInstructions
-                )
-            ],
-            orderType: .grabAndGo
+        let newOrderedItem = OrderedFoodItem(
+            id: foodItemId,
+            name: foodItem.name,
+            quantity: quantity,
+            price: foodItem.cost,
+            imageUrl: foodItem.imageUrl,
+            specialInstructions: specialInstructions
         )
 
-        DispatchQueue.main.async { // ✅ Ensure UI update
-            self.cartOrders.append(newOrder)
-            print("🛒 Added \(foodItem.name) to cart. Total items: \(self.cartOrders.count)")
+        DispatchQueue.main.async {
+            if let existingOrder = self.cartOrder {
+                // ✅ If new item is from a different kitchen, reset cart
+                if existingOrder.kitchenId != foodItem.kitchenId {
+                    print("🛒 New item from a different kitchen, clearing cart...")
+                    self.cartOrder = Order(
+                        id: UUID().uuidString, // Temporary ID
+                        userId: "", // Set when user logs in
+                        kitchenId: foodItem.kitchenId,
+                        kitchenName: foodItem.kitchenName,
+                        datePlaced: Date(),
+                        datePickedUp: nil,
+                        orderedFoodItems: [newOrderedItem],
+                        orderType: .grabAndGo
+                    )
+                } else {
+                    // ✅ Add to the existing order
+                    self.cartOrder?.orderedFoodItems.append(newOrderedItem)
+                }
+            } else {
+                // ✅ If no existing order, create a new one
+                self.cartOrder = Order(
+                    id: UUID().uuidString, // Temporary ID
+                    userId: "", // Set when user logs in
+                    kitchenId: foodItem.kitchenId,
+                    kitchenName: foodItem.kitchenName,
+                    datePlaced: Date(),
+                    datePickedUp: nil,
+                    orderedFoodItems: [newOrderedItem],
+                    orderType: .grabAndGo
+                )
+            }
+
+            print("✅ Added \(foodItem.name) to cart. Current total items: \(self.cartOrder?.orderedFoodItems.count ?? 0)")
         }
     }
 
-    // ✅ Remove order from cart
-    func removeFromCart(order: Order) {
-        cartOrders.removeAll { $0.id == order.id }
+    // ✅ Remove item from cart
+    func removeFromCart(foodItemId: String) {
+        DispatchQueue.main.async {
+            self.cartOrder?.orderedFoodItems.removeAll { $0.id == foodItemId }
+
+            // ✅ If no more items, reset cart
+            if self.cartOrder?.orderedFoodItems.isEmpty == true {
+                self.cartOrder = nil
+            }
+        }
     }
 
     // ✅ Clear cart after placing order
     func clearCart() {
-        cartOrders.removeAll()
+        DispatchQueue.main.async {
+            self.cartOrder = nil
+        }
     }
 
     // ✅ Place order and save to Firestore
     func placeOrder(userId: String, completion: @escaping (Bool) -> Void) {
-        guard let firstOrder = cartOrders.first else {
+        guard let cartOrder = cartOrder else {
             print("❌ Error: No orders to place")
             completion(false)
             return
@@ -75,39 +131,32 @@ class OrderViewModel: ObservableObject {
         let newOrder = Order(
             id: orderId, // Firestore-generated ID
             userId: userId,
-            kitchenId: firstOrder.kitchenId,
-            kitchenName: firstOrder.kitchenName,
+            kitchenId: cartOrder.kitchenId,
+            kitchenName: cartOrder.kitchenName,
             datePlaced: Date(),
             datePickedUp: nil,
-            foodItems: firstOrder.foodItems,
-            orderType: firstOrder.orderType
+            orderedFoodItems: cartOrder.orderedFoodItems,
+            orderType: cartOrder.orderType
         )
 
         do {
+            // ✅ Save order metadata
             try orderRef.setData(from: newOrder)
             try db.collection("users").document(userId).collection("orders").document(orderId).setData(from: newOrder)
-            try db.collection("kitchens").document(firstOrder.kitchenId).collection("orders").document(orderId).setData(from: newOrder)
+            try db.collection("kitchens").document(cartOrder.kitchenId).collection("orders").document(orderId).setData(from: newOrder)
+
+            // ✅ Save ordered items as a subcollection
+            for item in cartOrder.orderedFoodItems {
+                try orderRef.collection("orderedFoodItems").document(item.id).setData(from: item)
+            }
 
             print("✅ Order placed successfully!")
-            clearCart() // Empty cart after placing order
+            clearCart() // ✅ Empty cart after placing order
             completion(true)
         } catch {
             print("❌ Error placing order: \(error.localizedDescription)")
             completion(false)
         }
-    }
-
-    // ✅ Fetch orders for user
-    func fetchUserOrders(for userId: String) {
-        db.collection("users").document(userId).collection("orders")
-            .order(by: "datePlaced", descending: true)
-            .getDocuments { [weak self] snapshot, error in
-                if let error = error {
-                    print("❌ Error fetching user orders: \(error.localizedDescription)")
-                    return
-                }
-                self?.userOrders = snapshot?.documents.compactMap { try? $0.data(as: Order.self) } ?? []
-            }
     }
 
     // ✅ Fetch orders for kitchen

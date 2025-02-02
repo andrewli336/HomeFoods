@@ -88,8 +88,6 @@ struct FoodItemSheet: View {
                     orderViewModel.addToCart(
                         foodItem: foodItem,
                         quantity: quantity,
-                        kitchenId: foodItem.kitchenId,
-                        kitchenName: foodItem.kitchenName,
                         specialInstructions: specialInstructions.isEmpty ? nil : specialInstructions
                     )
                     isPresented = false // ✅ Close the sheet

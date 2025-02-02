@@ -20,7 +20,7 @@ struct CartSheet: View {
                 OrderConfirmationView()
             } else {
                 VStack(alignment: .leading, spacing: 20) {
-                    Text(orderViewModel.cartOrders.first?.kitchenName ?? "Your Cart")
+                    Text(orderViewModel.cartOrder?.kitchenName ?? "Your Cart")
                         .font(.largeTitle)
                         .bold()
                         .padding(.horizontal)
@@ -32,7 +32,7 @@ struct CartSheet: View {
 
                     // ✅ Checkout Section
                     CartCheckoutView(
-                        totalCost: orderViewModel.cartOrders.reduce(0) { $0 + $1.totalCost },
+                        totalCost: orderViewModel.cartOrder?.totalCost ?? 0,
                         isPlacingOrder: $isPlacingOrder,
                         placeOrder: placeOrder
                     )
@@ -79,12 +79,14 @@ struct CartOrderListView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 15) {
-                ForEach(orderViewModel.cartOrders) { order in
-                    VStack(alignment: .leading, spacing: 10) {
-                        ForEach(order.foodItems) { foodItem in
-                            CartOrderItemView(foodItem: foodItem, order: order)
-                        }
+                if let cartOrder = orderViewModel.cartOrder {
+                    ForEach(cartOrder.orderedFoodItems) { foodItem in
+                        CartOrderItemView(foodItem: foodItem)
                     }
+                } else {
+                    Text("Your cart is empty")
+                        .foregroundColor(.gray)
+                        .padding()
                 }
             }
         }
@@ -94,7 +96,6 @@ struct CartOrderListView: View {
 // ✅ Extracted Order Item Row
 struct CartOrderItemView: View {
     let foodItem: OrderedFoodItem
-    let order: Order
     @EnvironmentObject var orderViewModel: OrderViewModel
 
     var body: some View {
@@ -129,7 +130,7 @@ struct CartOrderItemView: View {
             Spacer()
 
             Button(action: {
-                orderViewModel.removeFromCart(order: order)
+                orderViewModel.removeFromCart(foodItemId: foodItem.id)
             }) {
                 Image(systemName: "trash")
                     .foregroundColor(.red)

@@ -15,10 +15,10 @@ struct Order: Identifiable, Codable {
     let kitchenName: String
     let datePlaced: Date // Date when the order was placed
     let datePickedUp: Date? // Optional, if not yet picked up
-    let foodItems: [OrderedFoodItem] // Simplify FoodItem to OrderedFoodItem for order storage
+    var orderedFoodItems: [OrderedFoodItem] // Simplify FoodItem to OrderedFoodItem for order storage
     let orderType: OrderType
     var totalCost: Double {
-        foodItems.reduce(0) { $0 + ($1.price * Double($1.quantity)) }
+        orderedFoodItems.reduce(0) { $0 + ($1.price * Double($1.quantity)) }
     }
 }
 

@@ -81,10 +81,10 @@ struct ContentView: View {
                             }
                             
                             Menu {
-                                NavigationLink(destination: ProfileView().environmentObject(appViewModel)) {
+                                NavigationLink(destination: ProfileView()) {
                                     Text("View Profile")
                                 }
-                                NavigationLink(destination: SettingsView().environmentObject(appViewModel)) {
+                                NavigationLink(destination: SettingsView()) {
                                     Text("Settings")
                                 }
                                 Button("Logout", action: {
@@ -109,7 +109,7 @@ struct ContentView: View {
             }
             
             // Persistent CartBar (only for user mode)
-            if !orderViewModel.cartOrders.isEmpty && !appViewModel.isChefMode {
+            if !orderViewModel.isCartEmpty() && !appViewModel.isChefMode {
                 CartBar()
             }
         }
