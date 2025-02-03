@@ -11,6 +11,8 @@ import SwiftUI
 
 struct HomeView: View {
     @EnvironmentObject var appViewModel: AppViewModel
+    @EnvironmentObject var locationManager: LocationManager
+    @State private var sortedKitchens: [Kitchen] = [] // ✅ Store sorted kitchens
 
     var body: some View {
         NavigationStack {
@@ -22,7 +24,7 @@ struct HomeView: View {
 
                 ScrollView(.horizontal, showsIndicators: false) {
                     LazyHStack(spacing: 15) {
-                        ForEach(appViewModel.kitchens) { kitchen in
+                        ForEach(sortedKitchens) { kitchen in
                             NavigationLink(destination: KitchenDetailView(kitchen: kitchen)) {
                                 KitchenCard(kitchen: kitchen)
                             }
@@ -30,17 +32,26 @@ struct HomeView: View {
                     }
                     .padding()
                 }
-                
+
                 Spacer()
             }
             .navigationTitle("Home")
             .onAppear {
-                appViewModel.fetchKitchens() // ✅ Fetch all kitchens
+                fetchAndSortKitchens()
             }
             .refreshable {
                 withAnimation {
-                    appViewModel.fetchKitchens() // ✅ Refresh data with animation
+                    fetchAndSortKitchens() // ✅ Refresh data
                 }
+            }
+        }
+    }
+
+    /// **📌 Fetch kitchens and sort them by distance**
+    private func fetchAndSortKitchens() {
+        appViewModel.fetchKitchens {
+            DispatchQueue.main.async {
+                self.sortedKitchens = locationManager.getSortedKitchens(appViewModel.kitchens)
             }
         }
     }

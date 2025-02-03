@@ -171,13 +171,13 @@ class AppViewModel: ObservableObject {
     }
     
     /// ✅ Fetches all kitchens from Firestore
-    func fetchKitchens() {
+    func fetchKitchens(completion: @escaping () -> Void = {}) { // ✅ Default empty closure
         db.collection("kitchens").getDocuments { snapshot, error in
             if let error = error {
                 print("❌ Failed to fetch kitchens: \(error.localizedDescription)")
                 return
             }
-            
+
             guard let documents = snapshot?.documents else {
                 print("❌ No kitchens found in Firestore")
                 return
@@ -186,8 +186,7 @@ class AppViewModel: ObservableObject {
             DispatchQueue.main.async {
                 self.kitchens = documents.map { document in
                     let data = document.data()
-                    
-                    // ✅ Extract basic kitchen info
+
                     let id = document.documentID
                     let name = data["name"] as? String ?? "Unnamed Kitchen"
                     let description = data["description"] as? String ?? "No description"
@@ -197,8 +196,11 @@ class AppViewModel: ObservableObject {
                     let location = data["location"] as? GeoPoint ?? GeoPoint(latitude: 0, longitude: 0)
                     let address = data["address"] as? String
                     let ownerId = data["ownerId"] as? String ?? "Unknown"
+                    
+                    // ✅ Retrieve dateSubmitted and dateApproved
+                    let dateSubmitted = (data["dateSubmitted"] as? Timestamp)?.dateValue() ?? nil
+                    let dateApproved = (data["dateApproved"] as? Timestamp)?.dateValue() ?? nil
 
-                    // ✅ Create empty kitchen (we will add foodItems separately)
                     let kitchen = Kitchen(
                         id: id,
                         name: name,
@@ -206,18 +208,20 @@ class AppViewModel: ObservableObject {
                         cuisine: cuisine,
                         rating: rating,
                         location: location,
-                        foodItems: [], // 🔥 Will be fetched separately
+                        foodItems: [],
                         imageUrl: imageUrl,
                         preorderSchedule: nil,
                         address: address,
-                        ownerId: ownerId
+                        ownerId: ownerId,
+                        dateSubmitted: dateSubmitted,
+                        dateApproved: dateApproved
                     )
 
-                    // 🔥 Fetch foodItems separately
                     self.fetchFoodItems(for: kitchen)
-
                     return kitchen
                 }
+
+                completion() // ✅ Call completion after fetching
             }
         }
     }
@@ -360,17 +364,19 @@ class AppViewModel: ObservableObject {
             return
         }
 
-        let newKitchenRef = db.collection("applyingKitchens").document() // ✅ Generate unique document ID
-        let kitchenId = newKitchenRef.documentID // ✅ Store generated ID
+        let newKitchenRef = db.collection("applyingKitchens").document()
+        let kitchenId = newKitchenRef.documentID
+        let dateSubmitted = Timestamp(date: Date()) // ✅ Add current timestamp
 
         let applicationData: [String: Any] = [
-            "id": kitchenId, // ✅ Explicitly store ID
+            "id": kitchenId,
             "ownerId": userId,
             "name": kitchenName,
             "description": kitchenDescription,
             "cuisine": kitchenCuisine,
             "address": kitchenAddress,
-            "location": kitchenGeoPoint ?? GeoPoint(latitude: 0, longitude: 0), // ✅ Use real GeoPoint if available
+            "location": kitchenGeoPoint ?? GeoPoint(latitude: 0, longitude: 0),
+            "dateSubmitted": dateSubmitted // ✅ Store date submitted
         ]
 
         newKitchenRef.setData(applicationData) { error in
@@ -380,7 +386,6 @@ class AppViewModel: ObservableObject {
                     completion(false)
                 } else {
                     print("✅ Kitchen submitted for approval!")
-
                     completion(true)
                 }
             }
@@ -396,9 +401,8 @@ class AppViewModel: ObservableObject {
             }
 
             let kitchens = snapshot?.documents.compactMap { doc -> Kitchen? in
-                let data = doc.data() // ✅ Get raw Firestore data
-
-                // ✅ Extract required fields safely
+                let data = doc.data()
+                
                 let id = doc.documentID
                 let name = data["name"] as? String ?? "Unknown Kitchen"
                 let description = data["description"] as? String ?? "No description available"
@@ -407,9 +411,9 @@ class AppViewModel: ObservableObject {
                 let location = data["location"] as? GeoPoint ?? GeoPoint(latitude: 0, longitude: 0)
                 let address = data["address"] as? String ?? "No Address"
                 let ownerId = data["ownerId"] as? String ?? "Unknown Owner"
+                let dateSubmitted = data["dateSubmitted"] as? Timestamp ?? Timestamp(date: Date()) // ✅ Default to now if missing
                 
-                // ✅ Assign default values for missing fields
-                let foodItems: [FoodItem] = [] // Default to an empty list
+                let foodItems: [FoodItem] = []
                 let imageUrl: String? = nil
                 let preorderSchedule: PreorderSchedule? = nil
 
@@ -424,7 +428,9 @@ class AppViewModel: ObservableObject {
                     imageUrl: imageUrl,
                     preorderSchedule: preorderSchedule,
                     address: address,
-                    ownerId: ownerId
+                    ownerId: ownerId,
+                    dateSubmitted: dateSubmitted.dateValue(), // ✅ Convert to Date
+                    dateApproved: nil // ✅ Still pending
                 )
             } ?? []
 
@@ -436,7 +442,9 @@ class AppViewModel: ObservableObject {
         let applyingKitchenRef = db.collection("applyingKitchens").document(kitchenId)
         let approvedKitchenRef = db.collection("kitchens").document(kitchenId)
 
-        applyingKitchenRef.getDocument { document, error in
+        applyingKitchenRef.getDocument { [weak self] document, error in
+            guard let self = self else { return }
+
             if let error = error {
                 print("❌ Error fetching applying kitchen: \(error.localizedDescription)")
                 completion(false)
@@ -449,23 +457,29 @@ class AppViewModel: ObservableObject {
                 return
             }
 
-            let data = document.data() ?? [:] // ✅ Get raw Firestore data
+            let data = document.data() ?? [:]
 
-            // ✅ Extract required fields safely
             let name = data["name"] as? String ?? "Unknown Kitchen"
             let description = data["description"] as? String ?? "No description available"
             let cuisine = data["cuisine"] as? String ?? "Unknown Cuisine"
             let rating = data["rating"] as? Double ?? 0.0
             let location = data["location"] as? GeoPoint ?? GeoPoint(latitude: 0, longitude: 0)
             let address = data["address"] as? String ?? "No Address"
-            let ownerId = data["ownerId"] as? String ?? "Unknown Owner"
+            let ownerId = data["ownerId"] as? String ?? ""
 
-            // ✅ Default placeholders for missing attributes
-            let foodItems: [String: Any] = [:] // Empty subcollection (created separately)
-            let imageUrl: String? = nil
-            let preorderSchedule: [String: Any]? = nil
+            // ✅ Debug: Print ownerId to check if it exists
+            print("ℹ️ Owner ID: \(ownerId)")
 
-            // ✅ Kitchen object ready for insertion
+            // ✅ If ownerId is empty, stop execution
+            if ownerId.isEmpty {
+                print("❌ Error: Missing ownerId for kitchen \(kitchenId)")
+                completion(false)
+                return
+            }
+
+            let dateSubmitted = data["dateSubmitted"] as? Timestamp ?? Timestamp(date: Date())
+            let dateApproved = Timestamp(date: Date()) // ✅ Store approval date
+
             let kitchenData: [String: Any] = [
                 "id": kitchenId,
                 "name": name,
@@ -475,9 +489,8 @@ class AppViewModel: ObservableObject {
                 "location": location,
                 "address": address,
                 "ownerId": ownerId,
-                "foodItems": foodItems, // 🔹 Empty dictionary (Subcollection will be created)
-                "imageUrl": imageUrl as Any,
-                "preorderSchedule": preorderSchedule as Any
+                "dateSubmitted": dateSubmitted,
+                "dateApproved": dateApproved // ✅ Store approval date
             ]
 
             // ✅ Move kitchen to "kitchens" collection
@@ -488,7 +501,6 @@ class AppViewModel: ObservableObject {
                     return
                 }
 
-                // ✅ Create empty "foodItems" subcollection
                 approvedKitchenRef.collection("foodItems").document("placeholder").setData(["name": "Sample Item"]) { error in
                     if let error = error {
                         print("❌ Failed to initialize foodItems subcollection: \(error.localizedDescription)")
@@ -497,16 +509,82 @@ class AppViewModel: ObservableObject {
                     }
                 }
 
-                // ✅ Remove from "applyingKitchens"
-                applyingKitchenRef.delete { error in
-                    if let error = error {
-                        print("❌ Error removing kitchen from applyingKitchens: \(error.localizedDescription)")
+                // ✅ Call updateUserToChef function instead of updating directly
+                self.updateUserToChef(ownerId: ownerId, kitchenId: kitchenId) { success in
+                    if !success {
                         completion(false)
-                    } else {
-                        print("✅ Kitchen approved and moved to kitchens collection")
-                        completion(true)
+                        return
+                    }
+
+                    print("✅ User \(ownerId) successfully updated to chef with kitchenId \(kitchenId)")
+
+                    // ✅ Remove from "applyingKitchens" after user update is successful
+                    applyingKitchenRef.delete { error in
+                        if let error = error {
+                            print("❌ Error removing kitchen from applyingKitchens: \(error.localizedDescription)")
+                            completion(false)
+                        } else {
+                            print("✅ Kitchen approved and moved to kitchens collection")
+                            completion(true)
+                        }
                     }
                 }
+            }
+        }
+    }
+    
+    func updateUserToChef(ownerId: String, kitchenId: String, completion: @escaping (Bool) -> Void) {
+        let userRef = db.collection("accounts").document(ownerId)
+
+        // ✅ Fetch existing user data first (for debugging)
+        userRef.getDocument { document, error in
+            if let error = error {
+                print("❌ Error fetching user before update: \(error.localizedDescription)")
+                completion(false)
+                return
+            }
+
+            guard let document = document, document.exists else {
+                print("❌ User document not found before updating!")
+                completion(false)
+                return
+            }
+
+            let existingData = document.data() ?? [:]
+            print("🔥 Firestore User Data (Before Update):")
+            for (key, value) in existingData {
+                print("   🔹 \(key): \(value)")
+            }
+
+            // ✅ Now update `isChef` and `kitchenId`
+            userRef.setData([
+                "isChef": true,
+                "kitchenId": kitchenId
+            ], merge: true) { error in
+                if let error = error {
+                    print("❌ Error updating user isChef status and kitchenId: \(error.localizedDescription)")
+                    completion(false)
+                    return
+                }
+
+                print("✅ Firestore successfully updated user \(ownerId) to chef")
+
+                // ✅ Fetch and print ALL user document fields after updating
+                userRef.getDocument { updatedDoc, err in
+                    if let err = err {
+                        print("❌ Error fetching updated user document: \(err.localizedDescription)")
+                    } else if let updatedDoc = updatedDoc, updatedDoc.exists {
+                        let updatedData = updatedDoc.data() ?? [:]
+                        print("🔥 Firestore User Data (After Update):")
+                        for (key, value) in updatedData {
+                            print("   🔹 \(key): \(value)")
+                        }
+                    } else {
+                        print("❌ No updated data found in user document")
+                    }
+                }
+
+                completion(true)
             }
         }
     }

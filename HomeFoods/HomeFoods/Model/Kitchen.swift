@@ -15,10 +15,12 @@ struct Kitchen: Identifiable, Codable {
     var description: String
     var cuisine: String
     var rating: Double
-    var location: GeoPoint // Use Firestore's GeoPoint
-    var foodItems: [FoodItem] // Nested food items for simplicity
-    var imageUrl: String? // URL to the kitchen's image in Firebase Storage
+    var location: GeoPoint
+    var foodItems: [FoodItem]
+    var imageUrl: String?
     var preorderSchedule: PreorderSchedule?
     var address: String?
     var ownerId: String
+    var dateSubmitted: Date? // ✅ When the kitchen was applied
+    var dateApproved: Date? // ✅ When the kitchen was approved
 }

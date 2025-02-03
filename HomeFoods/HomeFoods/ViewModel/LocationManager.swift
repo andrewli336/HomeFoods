@@ -27,6 +27,24 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         locationManager.delegate = self
         locationManager.requestWhenInUseAuthorization() // Request permission when initializing
     }
+    
+    
+    /// **📌 Get Sorted Kitchens by Distance**
+    func getSortedKitchens(_ kitchens: [Kitchen]) -> [Kitchen] {
+        guard let userLocation = userLocation else { return kitchens }
+
+        return kitchens.sorted { kitchen1, kitchen2 in
+            let location1 = CLLocation(latitude: kitchen1.location.latitude, longitude: kitchen1.location.longitude)
+            let location2 = CLLocation(latitude: kitchen2.location.latitude, longitude: kitchen2.location.longitude)
+            let userCLLocation = CLLocation(latitude: userLocation.latitude, longitude: userLocation.longitude)
+
+            let distance1 = userCLLocation.distance(from: location1)
+            let distance2 = userCLLocation.distance(from: location2)
+
+            return distance1 < distance2 // ✅ Sort by nearest first
+        }
+    }
+
 
     func convertAddressToGeoPoint(_ address: String, completion: @escaping (GeoPoint?) -> Void) {
         geocoder.geocodeAddressString(address) { [weak self] placemarks, error in
