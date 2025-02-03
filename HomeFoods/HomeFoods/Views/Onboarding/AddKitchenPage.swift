@@ -115,7 +115,6 @@ struct AddKitchenPage: View {
         }
         .sheet(isPresented: $showAddressSelection) {
             AddressSelectionView(selectedAddress: $selectedManualAddress, showAddressSelection: $showAddressSelection)
-                .environmentObject(appViewModel)
         }
     }
 }

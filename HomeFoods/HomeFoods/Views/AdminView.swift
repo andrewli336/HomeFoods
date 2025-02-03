@@ -13,6 +13,7 @@ struct AdminView: View {
     @EnvironmentObject var appViewModel: AppViewModel
     @EnvironmentObject var locationManager: LocationManager // ✅ Get admin's location
     @State private var pendingKitchens: [Kitchen] = [] // ✅ Store pending kitchens
+    @State private var chefNames: [String: String] = [:]
     @State private var distances: [String: String] = [:] // ✅ Store distances per kitchen
     @State private var selectedKitchen: Kitchen? // ✅ Track selected kitchen for approval
     @State private var showApprovalAlert = false // ✅ Show approval confirmation
@@ -33,7 +34,7 @@ struct AdminView: View {
                                     VStack(alignment: .leading, spacing: 5) {
                                         Text(kitchen.name)
                                             .font(.headline)
-                                        Text("Owner: \(chefName(for: kitchen.ownerId) ?? "Unknown")")
+                                        Text("Owner: \(chefNames[kitchen.ownerId] ?? "Loading...")") // ✅ Fetch dynamically
                                             .font(.subheadline)
                                             .foregroundColor(.gray)
                                         Text(kitchen.address ?? "Address unavailable")
@@ -87,6 +88,7 @@ struct AdminView: View {
         appViewModel.fetchPendingKitchens { kitchens in
             self.pendingKitchens = kitchens
             calculateDistances()
+            fetchChefNames()
         }
     }
 
@@ -116,11 +118,20 @@ struct AdminView: View {
         }
     }
 
-    /// **📌 Fetch chef's name for a given ownerId**
-    private func chefName(for ownerId: String) -> String? {
-        guard let account = appViewModel.accounts.first(where: { $0.id == ownerId }) else {
-            return nil
+    /// **📌 Fetch chef names using `appViewModel.fetchAccount`**
+    private func fetchChefNames() {
+        for kitchen in pendingKitchens {
+            appViewModel.fetchAccount(ownerId: kitchen.ownerId) { account in
+                if let account = account {
+                    DispatchQueue.main.async {
+                        self.chefNames[kitchen.ownerId] = account.name
+                    }
+                } else {
+                    DispatchQueue.main.async {
+                        self.chefNames[kitchen.ownerId] = "Unknown Chef"
+                    }
+                }
+            }
         }
-        return account.name
     }
 }
