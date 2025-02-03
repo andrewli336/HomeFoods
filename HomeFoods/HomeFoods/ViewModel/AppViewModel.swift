@@ -35,7 +35,6 @@ class AppViewModel: ObservableObject {
 
     init() {
         listenToAuthChanges()
-        locationManager.requestLocationPermission()
     }
     
     func listenToAuthChanges() {
@@ -144,6 +143,32 @@ class AppViewModel: ObservableObject {
         }
     }
     
+    func fetchAccount(ownerId: String, completion: @escaping (Account?) -> Void) {
+        let db = Firestore.firestore()
+        
+        db.collection("accounts").document(ownerId).getDocument { snapshot, error in
+            if let error = error {
+                print("❌ Error fetching account: \(error.localizedDescription)")
+                completion(nil)
+                return
+            }
+            
+            guard let document = snapshot, document.exists else {
+                print("❌ No account found for ownerId: \(ownerId)")
+                completion(nil)
+                return
+            }
+            
+            do {
+                let account = try document.data(as: Account.self)
+                completion(account)
+            } catch {
+                print("❌ Error decoding account: \(error.localizedDescription)")
+                completion(nil)
+            }
+        }
+    }
+    
     /// ✅ Fetches all kitchens from Firestore
     func fetchKitchens() {
         db.collection("kitchens").getDocuments { snapshot, error in
@@ -170,6 +195,7 @@ class AppViewModel: ObservableObject {
                     let imageUrl = data["imageUrl"] as? String
                     let location = data["location"] as? GeoPoint ?? GeoPoint(latitude: 0, longitude: 0)
                     let address = data["address"] as? String
+                    let ownerId = data["ownerId"] as? String ?? "Unknown"
 
                     // ✅ Create empty kitchen (we will add foodItems separately)
                     let kitchen = Kitchen(
@@ -182,7 +208,8 @@ class AppViewModel: ObservableObject {
                         foodItems: [], // 🔥 Will be fetched separately
                         imageUrl: imageUrl,
                         preorderSchedule: nil,
-                        address: address
+                        address: address,
+                        ownerId: ownerId
                     )
 
                     // 🔥 Fetch foodItems separately
@@ -319,7 +346,7 @@ class AppViewModel: ObservableObject {
     }
     
     
-    func submitChefApplication(kitchenName: String, kitchenDescription: String, kitchenAddress: String, completion: @escaping (Bool) -> Void) {
+    func submitChefApplication(kitchenName: String, kitchenDescription: String, kitchenAddress: String, kitchenGeoPoint: GeoPoint?, completion: @escaping (Bool) -> Void) {
         guard let userId = currentUser?.id else {
             completion(false)
             return
@@ -330,7 +357,7 @@ class AppViewModel: ObservableObject {
             "name": kitchenName,
             "description": kitchenDescription,
             "address": kitchenAddress,
-            "status": "pending" // ✅ Pending approval
+            "location": kitchenGeoPoint ?? GeoPoint(latitude: 0, longitude: 0) // ✅ Use real GeoPoint if available
         ]
 
         db.collection("applyingKitchens").document(userId).setData(applicationData) { error in
@@ -355,9 +382,13 @@ class AppViewModel: ObservableObject {
             }
 
             let kitchens = snapshot?.documents.compactMap { doc -> Kitchen? in
+                let data = doc.data()
+                let geoPoint = data["location"] as? GeoPoint ?? GeoPoint(latitude: 0, longitude: 0) // ✅ Extract GeoPoint
+                
                 do {
-                    var kitchen = try doc.data(as: Kitchen.self) // ✅ Decode using Firestore Decodable
+                    var kitchen = try Firestore.Decoder().decode(Kitchen.self, from: data) // ✅ Decode as Kitchen model
                     kitchen.id = doc.documentID // ✅ Assign document ID manually
+                    kitchen.location = geoPoint // ✅ Assign GeoPoint properly
                     return kitchen
                 } catch {
                     print("❌ Error decoding kitchen: \(error.localizedDescription)")
@@ -368,7 +399,7 @@ class AppViewModel: ObservableObject {
             completion(kitchens)
         }
     }
-
+    
     func approveKitchen(kitchenId: String, completion: @escaping (Bool) -> Void) {
         let applyingKitchenRef = db.collection("applyingKitchens").document(kitchenId)
         let approvedKitchenRef = db.collection("kitchens").document(kitchenId)
@@ -386,16 +417,17 @@ class AppViewModel: ObservableObject {
                 return
             }
 
-            // Get kitchen data
+            // ✅ Get kitchen data
             var kitchenData = document.data() ?? [:]
-            kitchenData["isApproved"] = true
+            let geoPoint = kitchenData["location"] as? GeoPoint ?? GeoPoint(latitude: 0, longitude: 0) // ✅ Extract correct GeoPoint
+            
             kitchenData["rating"] = 0.0 // Default rating
-            kitchenData["location"] = GeoPoint(latitude: 0, longitude: 0) // Placeholder
             kitchenData["foodItems"] = [] // Empty food list for now
             kitchenData["imageUrl"] = nil
             kitchenData["preorderSchedule"] = nil
+            kitchenData["location"] = geoPoint // ✅ Keep the original GeoPoint
 
-            // Move kitchen to main "kitchens" collection
+            // ✅ Move kitchen to main "kitchens" collection
             approvedKitchenRef.setData(kitchenData) { error in
                 if let error = error {
                     print("❌ Error adding approved kitchen: \(error.localizedDescription)")
@@ -403,7 +435,7 @@ class AppViewModel: ObservableObject {
                     return
                 }
 
-                // Remove from "applyingKitchens"
+                // ✅ Remove from "applyingKitchens"
                 applyingKitchenRef.delete { error in
                     if let error = error {
                         print("❌ Error removing kitchen from applyingKitchens: \(error.localizedDescription)")
@@ -412,6 +444,21 @@ class AppViewModel: ObservableObject {
                         print("✅ Kitchen approved and moved to kitchens collection")
                         completion(true)
                     }
+                }
+            }
+        }
+    }
+    
+    func updateUserAddress(userId: String, newAddress: String) {
+        let userRef = db.collection("accounts").document(userId)
+        
+        userRef.updateData(["address": newAddress]) { error in
+            if let error = error {
+                print("❌ Failed to update user address: \(error.localizedDescription)")
+            } else {
+                print("✅ User address updated successfully!")
+                DispatchQueue.main.async {
+                    self.currentUser?.address = newAddress // ✅ Update local state
                 }
             }
         }

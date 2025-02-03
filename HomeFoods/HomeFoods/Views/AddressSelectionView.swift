@@ -43,7 +43,7 @@ struct AddressSelectionView: View {
                 .padding()
 
             // 📌 Address Suggestions
-            List(autocompleteManager.searchResults, id: \.title) { result in
+            List(autocompleteManager.searchResults, id: \.combinedID) { result in
                 Button(action: {
                     selectAddress(result.title)
                 }) {
@@ -111,5 +111,11 @@ struct AddressSelectionView: View {
                 }
             }
         }
+    }
+}
+
+extension MKLocalSearchCompletion {
+    var combinedID: String {
+        return "\(title) \(subtitle)"
     }
 }

@@ -6,13 +6,16 @@
 //
 
 import SwiftUI
+import FirebaseFirestore
 
 struct ChefSetupView: View {
     @EnvironmentObject var appViewModel: AppViewModel
     @State private var currentPage = 0
     @State private var kitchenName = ""
     @State private var kitchenDescription = ""
+    @State private var kitchenCuisine = ""
     @State private var kitchenAddress = "" // ✅ Store the final address
+    @State private var kitchenGeoPoint: GeoPoint? // ✅ Store converted GeoPoint
     @State private var showError = false
 
     var body: some View {
@@ -25,9 +28,11 @@ struct ChefSetupView: View {
                     AddKitchenPage(
                         kitchenName: $kitchenName,
                         kitchenDescription: $kitchenDescription,
-                        nextPage: { address in
+                        kitchenCuisine: $kitchenCuisine,
+                        nextPage: { address, geoPoint in
                             kitchenAddress = address // ✅ Save address
-                            nextPage() // ✅ Call nextPage without arguments
+                            kitchenGeoPoint = geoPoint // ✅ Save GeoPoint
+                            nextPage() // ✅ Call nextPage
                         }
                     )
                     .tag(1)
@@ -35,7 +40,7 @@ struct ChefSetupView: View {
                     ChefApprovalPage(
                         kitchenName: kitchenName,
                         kitchenDescription: kitchenDescription,
-                        kitchenAddress: kitchenAddress, // ✅ Pass address
+                        kitchenAddress: kitchenAddress,
                         onSubmit: submitForApproval
                     )
                     .tag(2)
@@ -60,10 +65,21 @@ struct ChefSetupView: View {
     }
 
     private func submitForApproval() {
+        guard !kitchenName.isEmpty, !kitchenDescription.isEmpty, !kitchenAddress.isEmpty else {
+            showError = true
+            return
+        }
+
+        // ✅ Update the user's address in their account
+        if let userId = appViewModel.currentUser?.id {
+            appViewModel.updateUserAddress(userId: userId, newAddress: kitchenAddress)
+        }
+
         appViewModel.submitChefApplication(
             kitchenName: kitchenName,
             kitchenDescription: kitchenDescription,
-            kitchenAddress: kitchenAddress // ✅ Submit final address
+            kitchenAddress: kitchenAddress, // ✅ Submit final address
+            kitchenGeoPoint: kitchenGeoPoint // ✅ Submit GeoPoint
         ) { success in
             if success {
                 nextPage()
@@ -75,6 +91,6 @@ struct ChefSetupView: View {
 
     private func finishSetup() {
         appViewModel.showChefSetupView = false
-        appViewModel.isChefMode = true
+        appViewModel.isChefMode = false
     }
 }

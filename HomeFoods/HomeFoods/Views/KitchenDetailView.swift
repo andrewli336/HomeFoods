@@ -19,7 +19,7 @@ struct KitchenDetailView: View {
                 KitchenImageView(kitchen: kitchen)
 
                 VStack(alignment: .leading, spacing: 15) {
-                    KitchenDetailsView(kitchen: kitchen)
+                    KitchenTopPart(kitchen: kitchen)
 
                     Divider()
 
@@ -52,19 +52,28 @@ struct KitchenImageView: View {
                     .frame(height: 250)
                     .clipped()
             } else if phase.error != nil {
+                // Placeholder for error
                 Color.red
                     .frame(height: 250)
-                    .overlay(Text("Image not found").foregroundColor(.white))
+                    .clipped()
+                    .overlay(Text("Error").foregroundColor(.white))
             } else {
+                // Placeholder while loading
                 ProgressView()
                     .frame(height: 250)
+                    .clipped()
             }
         }
     }
 }
 
-struct KitchenDetailsView: View {
+struct KitchenTopPart: View {
     let kitchen: Kitchen
+    @EnvironmentObject var appViewModel: AppViewModel // ✅ Use AppViewModel to fetch account
+    @EnvironmentObject var locationManager: LocationManager
+    @State private var owner: Account? // ✅ Store owner account data
+    @State private var isLoading = true // ✅ Track loading state
+    @State private var distanceText: String = "Calculating..."
 
     var body: some View {
         VStack(alignment: .leading, spacing: 15) {
@@ -81,9 +90,115 @@ struct KitchenDetailsView: View {
                 .font(.body)
                 .foregroundColor(.black.opacity(0.8))
                 .padding(.top, 5)
+            
+            // ✅ Kitchen Address
+            HStack {
+                Image(systemName: "mappin.and.ellipse")
+                    .foregroundColor(.red)
+                Text(kitchen.address ?? "Address unavailable")
+                    .font(.subheadline)
+                    .foregroundColor(.gray)
+            }
+
+            // ✅ Distance from User
+            HStack {
+                Image(systemName: "location.circle.fill")
+                    .foregroundColor(.blue)
+                Text(distanceText)
+                    .font(.subheadline)
+                    .foregroundColor(.blue)
+                    .bold()
+            }
+
+            Divider()
+
+            if isLoading {
+                ProgressView() // ✅ Show loading while fetching
+                    .padding()
+            } else if let owner = owner {
+                // ✅ Owner Profile Section
+                NavigationLink(destination: AccountView(account: owner)) {
+                    HStack {
+                        AsyncImage(url: URL(string: owner.profilePictureUrl ?? "")) { phase in
+                            if let image = phase.image {
+                                image
+                                    .resizable()
+                                    .scaledToFill()
+                                    .frame(width: 50, height: 50)
+                                    .clipShape(Circle())
+                            } else {
+                                Image(systemName: "person.crop.circle.fill")
+                                    .resizable()
+                                    .scaledToFill()
+                                    .frame(width: 50, height: 50)
+                                    .foregroundColor(.gray)
+                            }
+                        }
+                        .frame(width: 50, height: 50)
+
+                        VStack(alignment: .leading) {
+                            Text(owner.name)
+                                .font(.headline)
+                                .foregroundColor(.primary)
+                            Text(owner.email)
+                                .font(.subheadline)
+                                .foregroundColor(.gray)
+                        }
+
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .foregroundColor(.gray)
+                    }
+                    .padding()
+                    .background(RoundedRectangle(cornerRadius: 10).fill(Color.gray.opacity(0.1)))
+                }
+            } else {
+                Text("❌ Failed to load owner details.")
+                    .font(.subheadline)
+                    .foregroundColor(.red)
+            }
+        }
+        .padding()
+        .navigationTitle("Kitchen Details")
+        .onAppear {
+            fetchOwnerAccount()
+            calculateDistance()
+        }
+    }
+    
+    private func calculateDistance() {
+        guard let userLocation = locationManager.userLocation else {
+            distanceText = "Location unavailable"
+            return
+        }
+        
+        let kitchenLocation = CLLocation(latitude: kitchen.location.latitude, longitude: kitchen.location.longitude)
+        let userCLLocation = CLLocation(latitude: userLocation.latitude, longitude: userLocation.longitude)
+
+        let distanceInMeters = userCLLocation.distance(from: kitchenLocation)
+        let distanceInMiles = distanceInMeters / 1609.34 // Convert to miles
+
+        DispatchQueue.main.async {
+            distanceText = String(format: "%.1f miles away", distanceInMiles)
+        }
+    }
+
+    // 📌 Fetch owner account using AppViewModel
+    private func fetchOwnerAccount() {
+        guard !kitchen.ownerId.isEmpty else {
+            print("❌ Error: Owner ID is empty")
+            return
+        }
+
+        appViewModel.fetchAccount(ownerId: kitchen.ownerId) { account in
+            DispatchQueue.main.async {
+                self.owner = account
+                self.isLoading = false
+            }
         }
     }
 }
+
 
 struct FeaturedItemsView: View {
     let foodItems: [FoodItem]
@@ -137,12 +252,4 @@ struct OrderTabsView: View {
             }
         }
     }
-}
-
-
-
-
-#Preview {
-    let sampleKitchen = sampleKitchens[0]
-    KitchenDetailView(kitchen: sampleKitchen)
 }

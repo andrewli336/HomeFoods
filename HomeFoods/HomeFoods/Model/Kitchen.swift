@@ -20,4 +20,5 @@ struct Kitchen: Identifiable, Codable {
     var imageUrl: String? // URL to the kitchen's image in Firebase Storage
     var preorderSchedule: PreorderSchedule?
     var address: String?
+    var ownerId: String
 }

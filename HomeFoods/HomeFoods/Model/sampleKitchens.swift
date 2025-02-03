@@ -135,7 +135,7 @@ let sampleKitchens = [
                 numAvailable: 3
             )
         ],
-        imageUrl: "https://firebasestorage.googleapis.com/v0/b/homefoods-16e56.firebasestorage.app/o/h9.JPG?alt=media&token=e848cbcb-8fa7-41d2-b867-17c425c4c1d9", preorderSchedule: nil, address: "349"
+        imageUrl: "https://firebasestorage.googleapis.com/v0/b/homefoods-16e56.firebasestorage.app/o/h9.JPG?alt=media&token=e848cbcb-8fa7-41d2-b867-17c425c4c1d9", preorderSchedule: nil, address: "349", ownerId: "asdas"
     )
 ]
 

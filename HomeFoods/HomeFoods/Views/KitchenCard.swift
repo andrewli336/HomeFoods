@@ -7,9 +7,12 @@
 
 import SwiftUI
 import FirebaseFirestore
+import CoreLocation
 
 struct KitchenCard: View {
     let kitchen: Kitchen
+    @EnvironmentObject var locationManager: LocationManager // ✅ Get user's location
+    @State private var distanceText: String = "Calculating..." // ✅ Store calculated distance
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -47,22 +50,45 @@ struct KitchenCard: View {
                 Text("\(kitchen.foodItems.count) items available")
                     .font(.subheadline)
                     .foregroundColor(.gray)
+
+                // ✅ Display distance
+                Text(distanceText)
+                    .font(.subheadline)
+                    .foregroundColor(.blue)
+                    .bold()
             }
             .padding([.leading, .trailing, .bottom], 10)
         }
         .background(
-            RoundedRectangle(cornerRadius: 15) // More consistent corner radius
+            RoundedRectangle(cornerRadius: 15)
                 .fill(Color.white)
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 15) // Subtle border for clarity
+            RoundedRectangle(cornerRadius: 15)
                 .stroke(Color.gray.opacity(0.2), lineWidth: 1)
         )
-        .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2) // Soft shadow
+        .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
+        .onAppear {
+            calculateDistance() // ✅ Calculate distance when card appears
+        }
     }
-}
 
-#Preview {
-    let sampleKitchen = sampleKitchens[0]
-    KitchenCard(kitchen: sampleKitchen)
+    // 📌 **Function to Calculate Distance**
+    private func calculateDistance() {
+        guard let userLocation = locationManager.userLocation else {
+            distanceText = "Location unavailable"
+            return
+        }
+        
+        let kitchenLocation = CLLocation(latitude: kitchen.location.latitude, longitude: kitchen.location.longitude)
+        let userCLLocation = CLLocation(latitude: userLocation.latitude, longitude: userLocation.longitude)
+
+        let distanceInMeters = userCLLocation.distance(from: kitchenLocation)
+        let distanceInMiles = distanceInMeters / 1609.34 // Convert to miles
+        let distanceInKm = distanceInMeters / 1000 // Convert to km
+
+        DispatchQueue.main.async {
+            distanceText = String(format: "📍 %.1f miles away", distanceInMiles)
+        }
+    }
 }

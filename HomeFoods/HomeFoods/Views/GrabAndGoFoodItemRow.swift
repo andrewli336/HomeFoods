@@ -10,7 +10,7 @@ import SwiftUI
 struct GrabAndGoFoodItemRow: View {
     let foodItem: FoodItem
     @State private var showSheet = false // State to control sheet presentation
-
+    
     var body: some View {
         HStack(spacing: 15) {
             // Food item details
@@ -105,8 +105,4 @@ struct GrabAndGoFoodItemRow: View {
                 .presentationDetents([.large]) // Open the sheet fully by default
         }
     }
-}
-#Preview {
-    let sampleFood = sampleKitchens[0].foodItems[0]
-    GrabAndGoFoodItemRow(foodItem: sampleFood)
 }

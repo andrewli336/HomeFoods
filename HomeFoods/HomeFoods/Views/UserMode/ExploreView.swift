@@ -12,16 +12,17 @@ import FirebaseFirestore
 struct ExploreView: View {
     @EnvironmentObject var appViewModel: AppViewModel
     @StateObject private var locationManager = LocationManager()
+    
     @State private var position: MapCameraPosition = .region(
         MKCoordinateRegion(
             center: CLLocationCoordinate2D(latitude: 37.549099, longitude: -121.943069), // Default location
             span: MKCoordinateSpan(latitudeDelta: 0.1, longitudeDelta: 0.1)
         )
     )
+    
     @State private var selectedKitchen: Kitchen? // Track the selected kitchen
     @State private var showDetail = false // Navigation flag
     @State private var lastKnownLocation: CLLocationCoordinate2DWrapper? // ✅ Custom Equatable Wrapper
-    @State private var kitchens: [Kitchen] = [] // Store kitchens fetched from Firestore
 
     var body: some View {
         NavigationStack {
@@ -92,9 +93,13 @@ struct ExploreView: View {
             }
             .onAppear {
                 appViewModel.fetchKitchens() // ✅ Fetch kitchens from Firestore
-                locationManager.requestLocationPermission()
+
+                // ✅ Center map on user's location if available
+                if let userLocation = locationManager.userLocation {
+                    updateUserLocation(userLocation)
+                }
             }
-            .onChange(of: locationManager.userLocation.map { CLLocationCoordinate2DWrapper(coordinate: $0) }) { newLocation in
+            .onChange(of: locationManager.userLocation.map { CLLocationCoordinate2DWrapper(coordinate: $0) }) { oldValue, newLocation in
                 if let newLocation = newLocation, newLocation != lastKnownLocation {
                     updateUserLocation(newLocation.coordinate)
                     lastKnownLocation = newLocation // ✅ Update last known location
@@ -113,7 +118,7 @@ struct ExploreView: View {
         position = MapCameraPosition.region(
             MKCoordinateRegion(
                 center: location,
-                span: MKCoordinateSpan(latitudeDelta: 0.1, longitudeDelta: 0.1)
+                span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05) // 🔥 Zoomed-in view
             )
         )
     }
