@@ -7,6 +7,8 @@
 
 import SwiftUI
 
+import SwiftUI
+
 struct HomeView: View {
     @EnvironmentObject var appViewModel: AppViewModel
 
@@ -28,11 +30,18 @@ struct HomeView: View {
                     }
                     .padding()
                 }
+                
+                Spacer()
             }
+            .navigationTitle("Home")
             .onAppear {
                 appViewModel.fetchKitchens() // ✅ Fetch all kitchens
             }
-            .navigationTitle("Home")
+            .refreshable {
+                withAnimation {
+                    appViewModel.fetchKitchens() // ✅ Refresh data with animation
+                }
+            }
         }
     }
 }

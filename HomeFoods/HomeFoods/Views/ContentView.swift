@@ -31,7 +31,7 @@ struct ContentView: View {
                                 Label("Orders", systemImage: "tray")
                             }
                     } else if appViewModel.isAdminMode {
-                        Text("admin")
+                        AdminView()
                     } else {
                         HomeView()
                             .tabItem {
@@ -56,15 +56,6 @@ struct ContentView: View {
                             Text(appViewModel.isChefMode ? "Kitchen" : "Home")
                                 .font(.headline)
                                 .foregroundColor(.black)
-                            Image(systemName: "chevron.down")
-                                .foregroundColor(.black)
-                                .onTapGesture {
-                                    appViewModel.showAddressSelection = true // ✅ Open AddressSelectionView
-                                }
-                                .sheet(isPresented: $appViewModel.showAddressSelection) {
-                                    AddressSelectionView(selectedAddress: $appViewModel.selectedManualAddress)
-                                        .environmentObject(appViewModel) // ✅ Pass environment object
-                                }
                         }
                     }
                     

@@ -14,7 +14,7 @@ struct AddressSelectionView: View {
     @StateObject private var autocompleteManager = AutocompleteManager()
 
     @Binding var selectedAddress: String? // ✅ Now takes a binding to pass back data
-    @State private var showSaveConfirmation = false
+    @Binding var showAddressSelection: Bool // ✅ Added Binding to dismiss the sheet
     @State private var isSaving = false
 
     var body: some View {
@@ -78,11 +78,6 @@ struct AddressSelectionView: View {
 
             Spacer()
         }
-        .alert(isPresented: $showSaveConfirmation) {
-            Alert(title: Text("Address Saved"),
-                  message: Text("Your address has been updated successfully."),
-                  dismissButton: .default(Text("OK")))
-        }
         .padding()
     }
 
@@ -92,7 +87,7 @@ struct AddressSelectionView: View {
         autocompleteManager.searchQuery = address
     }
 
-    /// Saves the selected address and updates Firestore
+    /// Saves the selected address and updates Firestore, then dismisses the sheet
     private func saveAddress() {
         guard let address = selectedAddress, let userId = appViewModel.currentUser?.id else { return }
         
@@ -107,7 +102,7 @@ struct AddressSelectionView: View {
                 } else {
                     locationManager.address = address
                     appViewModel.currentUser?.address = address
-                    showSaveConfirmation = true
+                    showAddressSelection = false // ✅ Dismiss the sheet
                 }
             }
         }

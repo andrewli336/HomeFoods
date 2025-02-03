@@ -18,22 +18,23 @@ struct KitchenCard: View {
         VStack(alignment: .leading, spacing: 10) {
             // Kitchen image using AsyncImage
             AsyncImage(url: URL(string: kitchen.imageUrl ?? "")) { phase in
-                if let image = phase.image {
-                    image
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                        .frame(height: 160) // Slightly taller for better visuals
-                        .cornerRadius(15) // Rounded corners for the image
-                        .clipped()
-                } else if phase.error != nil {
-                    // Placeholder for error
-                    Color.red
-                        .frame(height: 160)
-                        .cornerRadius(15)
-                        .overlay(Text("Error").foregroundColor(.white))
+                if let imageUrl = kitchen.imageUrl, !imageUrl.isEmpty {
+                    if let image = phase.image {
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(height: 160) // Slightly taller for better visuals
+                            .cornerRadius(15) // Rounded corners for the image
+                            .clipped()
+                    } else {
+                        // 🔹 While loading, show a progress indicator
+                        ProgressView()
+                            .frame(height: 160)
+                            .cornerRadius(15)
+                    }
                 } else {
-                    // Placeholder while loading
-                    ProgressView()
+                    // 🔹 If `imageUrl` is nil or empty, show a solid gray background
+                    Color.gray.opacity(0.3)
                         .frame(height: 160)
                         .cornerRadius(15)
                 }
@@ -85,7 +86,6 @@ struct KitchenCard: View {
 
         let distanceInMeters = userCLLocation.distance(from: kitchenLocation)
         let distanceInMiles = distanceInMeters / 1609.34 // Convert to miles
-        let distanceInKm = distanceInMeters / 1000 // Convert to km
 
         DispatchQueue.main.async {
             distanceText = String(format: "📍 %.1f miles away", distanceInMiles)

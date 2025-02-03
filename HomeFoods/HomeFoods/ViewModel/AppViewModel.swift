@@ -116,6 +116,7 @@ class AppViewModel: ObservableObject {
             try auth.signOut()
             self.isAuthenticated = false
             self.currentUser = nil
+            self.isAdminMode = false
             self.isChefMode = false
         } catch {
             print("Logout failed: \(error.localizedDescription)")
@@ -346,27 +347,40 @@ class AppViewModel: ObservableObject {
     }
     
     
-    func submitChefApplication(kitchenName: String, kitchenDescription: String, kitchenAddress: String, kitchenGeoPoint: GeoPoint?, completion: @escaping (Bool) -> Void) {
+    func submitChefApplication(
+        kitchenName: String,
+        kitchenDescription: String,
+        kitchenCuisine: String,
+        kitchenAddress: String,
+        kitchenGeoPoint: GeoPoint?,
+        completion: @escaping (Bool) -> Void
+    ) {
         guard let userId = currentUser?.id else {
             completion(false)
             return
         }
 
+        let newKitchenRef = db.collection("applyingKitchens").document() // ✅ Generate unique document ID
+        let kitchenId = newKitchenRef.documentID // ✅ Store generated ID
+
         let applicationData: [String: Any] = [
+            "id": kitchenId, // ✅ Explicitly store ID
             "ownerId": userId,
             "name": kitchenName,
             "description": kitchenDescription,
+            "cuisine": kitchenCuisine,
             "address": kitchenAddress,
-            "location": kitchenGeoPoint ?? GeoPoint(latitude: 0, longitude: 0) // ✅ Use real GeoPoint if available
+            "location": kitchenGeoPoint ?? GeoPoint(latitude: 0, longitude: 0), // ✅ Use real GeoPoint if available
         ]
 
-        db.collection("applyingKitchens").document(userId).setData(applicationData) { error in
+        newKitchenRef.setData(applicationData) { error in
             DispatchQueue.main.async {
                 if let error = error {
                     print("❌ Failed to submit kitchen: \(error.localizedDescription)")
                     completion(false)
                 } else {
                     print("✅ Kitchen submitted for approval!")
+
                     completion(true)
                 }
             }
@@ -382,18 +396,36 @@ class AppViewModel: ObservableObject {
             }
 
             let kitchens = snapshot?.documents.compactMap { doc -> Kitchen? in
-                let data = doc.data()
-                let geoPoint = data["location"] as? GeoPoint ?? GeoPoint(latitude: 0, longitude: 0) // ✅ Extract GeoPoint
+                let data = doc.data() // ✅ Get raw Firestore data
+
+                // ✅ Extract required fields safely
+                let id = doc.documentID
+                let name = data["name"] as? String ?? "Unknown Kitchen"
+                let description = data["description"] as? String ?? "No description available"
+                let cuisine = data["cuisine"] as? String ?? "Unknown Cuisine"
+                let rating = data["rating"] as? Double ?? 0.0
+                let location = data["location"] as? GeoPoint ?? GeoPoint(latitude: 0, longitude: 0)
+                let address = data["address"] as? String ?? "No Address"
+                let ownerId = data["ownerId"] as? String ?? "Unknown Owner"
                 
-                do {
-                    var kitchen = try Firestore.Decoder().decode(Kitchen.self, from: data) // ✅ Decode as Kitchen model
-                    kitchen.id = doc.documentID // ✅ Assign document ID manually
-                    kitchen.location = geoPoint // ✅ Assign GeoPoint properly
-                    return kitchen
-                } catch {
-                    print("❌ Error decoding kitchen: \(error.localizedDescription)")
-                    return nil
-                }
+                // ✅ Assign default values for missing fields
+                let foodItems: [FoodItem] = [] // Default to an empty list
+                let imageUrl: String? = nil
+                let preorderSchedule: PreorderSchedule? = nil
+
+                return Kitchen(
+                    id: id,
+                    name: name,
+                    description: description,
+                    cuisine: cuisine,
+                    rating: rating,
+                    location: location,
+                    foodItems: foodItems,
+                    imageUrl: imageUrl,
+                    preorderSchedule: preorderSchedule,
+                    address: address,
+                    ownerId: ownerId
+                )
             } ?? []
 
             completion(kitchens)
@@ -417,22 +449,52 @@ class AppViewModel: ObservableObject {
                 return
             }
 
-            // ✅ Get kitchen data
-            var kitchenData = document.data() ?? [:]
-            let geoPoint = kitchenData["location"] as? GeoPoint ?? GeoPoint(latitude: 0, longitude: 0) // ✅ Extract correct GeoPoint
-            
-            kitchenData["rating"] = 0.0 // Default rating
-            kitchenData["foodItems"] = [] // Empty food list for now
-            kitchenData["imageUrl"] = nil
-            kitchenData["preorderSchedule"] = nil
-            kitchenData["location"] = geoPoint // ✅ Keep the original GeoPoint
+            let data = document.data() ?? [:] // ✅ Get raw Firestore data
 
-            // ✅ Move kitchen to main "kitchens" collection
+            // ✅ Extract required fields safely
+            let name = data["name"] as? String ?? "Unknown Kitchen"
+            let description = data["description"] as? String ?? "No description available"
+            let cuisine = data["cuisine"] as? String ?? "Unknown Cuisine"
+            let rating = data["rating"] as? Double ?? 0.0
+            let location = data["location"] as? GeoPoint ?? GeoPoint(latitude: 0, longitude: 0)
+            let address = data["address"] as? String ?? "No Address"
+            let ownerId = data["ownerId"] as? String ?? "Unknown Owner"
+
+            // ✅ Default placeholders for missing attributes
+            let foodItems: [String: Any] = [:] // Empty subcollection (created separately)
+            let imageUrl: String? = nil
+            let preorderSchedule: [String: Any]? = nil
+
+            // ✅ Kitchen object ready for insertion
+            let kitchenData: [String: Any] = [
+                "id": kitchenId,
+                "name": name,
+                "description": description,
+                "cuisine": cuisine,
+                "rating": rating,
+                "location": location,
+                "address": address,
+                "ownerId": ownerId,
+                "foodItems": foodItems, // 🔹 Empty dictionary (Subcollection will be created)
+                "imageUrl": imageUrl as Any,
+                "preorderSchedule": preorderSchedule as Any
+            ]
+
+            // ✅ Move kitchen to "kitchens" collection
             approvedKitchenRef.setData(kitchenData) { error in
                 if let error = error {
                     print("❌ Error adding approved kitchen: \(error.localizedDescription)")
                     completion(false)
                     return
+                }
+
+                // ✅ Create empty "foodItems" subcollection
+                approvedKitchenRef.collection("foodItems").document("placeholder").setData(["name": "Sample Item"]) { error in
+                    if let error = error {
+                        print("❌ Failed to initialize foodItems subcollection: \(error.localizedDescription)")
+                    } else {
+                        print("✅ Empty foodItems subcollection initialized")
+                    }
                 }
 
                 // ✅ Remove from "applyingKitchens"

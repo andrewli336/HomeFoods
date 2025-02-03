@@ -78,6 +78,7 @@ struct ChefSetupView: View {
         appViewModel.submitChefApplication(
             kitchenName: kitchenName,
             kitchenDescription: kitchenDescription,
+            kitchenCuisine: kitchenCuisine,
             kitchenAddress: kitchenAddress, // ✅ Submit final address
             kitchenGeoPoint: kitchenGeoPoint // ✅ Submit GeoPoint
         ) { success in
