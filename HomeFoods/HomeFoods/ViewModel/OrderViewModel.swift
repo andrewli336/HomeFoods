@@ -159,16 +159,54 @@ class OrderViewModel: ObservableObject {
         }
     }
 
-    // ✅ Fetch orders for kitchen
-    func fetchKitchenOrders(for kitchenId: String) {
+    func fetchKitchenOrders(for kitchenId: String, completion: @escaping ([Order]) -> Void) {
         db.collection("kitchens").document(kitchenId).collection("orders")
             .order(by: "datePlaced", descending: true)
-            .getDocuments { [weak self] snapshot, error in
+            .getDocuments { snapshot, error in
                 if let error = error {
                     print("❌ Error fetching kitchen orders: \(error.localizedDescription)")
+                    completion([])
                     return
                 }
-                self?.kitchenOrders = snapshot?.documents.compactMap { try? $0.data(as: Order.self) } ?? []
+
+                let orders: [Order] = snapshot?.documents.compactMap { doc in
+                    let data = doc.data()
+                    
+                    // ✅ Extract order fields
+                    let id = doc.documentID
+                    let kitchenId = data["kitchenId"] as? String ?? "Unknown"
+                    let kitchenName = data["kitchenName"] as? String ?? "Unknown"
+                    let orderType = data["orderType"] as? String ?? "Unknown"
+                    let userId = data["userId"] as? String ?? "Unknown"
+                    let datePlaced = (data["datePlaced"] as? Timestamp)?.dateValue() ?? Date()
+                    let datePickedUp = (data["datePickedUp"] as? Timestamp)?.dateValue() // ✅ Optional
+
+                    // ✅ Extract ordered food items
+                    let orderedFoodItemsData = data["orderedFoodItems"] as? [[String: Any]] ?? []
+                    let orderedFoodItems: [OrderedFoodItem] = orderedFoodItemsData.compactMap { itemData in
+                        guard let id = itemData["id"] as? String,
+                              let name = itemData["name"] as? String,
+                              let price = itemData["price"] as? Double,
+                              let quantity = itemData["quantity"] as? Int,
+                              let imageUrl = itemData["imageUrl"] as? String else {
+                            return nil
+                        }
+                        return OrderedFoodItem(id: id, name: name, quantity: quantity, price: price, imageUrl: imageUrl)
+                    }
+
+                    return Order(
+                        id: id,
+                        userId: userId,
+                        kitchenId: kitchenId,
+                        kitchenName: kitchenName,
+                        datePlaced: datePlaced, // ✅ Corrected
+                        datePickedUp: datePickedUp, // ✅ Optional pickup date
+                        orderedFoodItems: orderedFoodItems, // ✅ Correctly assigned
+                        orderType: .preorder // ✅ Corrected
+                    )
+                } ?? []
+
+                completion(orders)
             }
     }
 }
