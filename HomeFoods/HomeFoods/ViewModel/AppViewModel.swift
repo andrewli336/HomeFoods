@@ -609,4 +609,112 @@ class AppViewModel: ObservableObject {
             }
         }
     }
+    
+    func fetchKitchenById(kitchenId: String, completion: @escaping (Kitchen?) -> Void) {
+        let kitchenRef = db.collection("kitchens").document(kitchenId)
+
+        kitchenRef.getDocument { document, error in
+            if let error = error {
+                print("❌ Failed to fetch kitchen \(kitchenId): \(error.localizedDescription)")
+                completion(nil)
+                return
+            }
+
+            guard let document = document, document.exists, let data = document.data() else {
+                print("❌ No kitchen found with ID \(kitchenId)")
+                completion(nil)
+                return
+            }
+
+            let id = document.documentID
+            let name = data["name"] as? String ?? "Unnamed Kitchen"
+            let description = data["description"] as? String ?? "No description"
+            let cuisine = data["cuisine"] as? String ?? "Unknown"
+            let rating = data["rating"] as? Double ?? 0.0
+            let imageUrl = data["imageUrl"] as? String
+            let location = data["location"] as? GeoPoint ?? GeoPoint(latitude: 0, longitude: 0)
+            let address = data["address"] as? String
+            let ownerId = data["ownerId"] as? String ?? "Unknown"
+            let dateSubmitted = (data["dateSubmitted"] as? Timestamp)?.dateValue()
+            let dateApproved = (data["dateApproved"] as? Timestamp)?.dateValue()
+
+            var kitchen = Kitchen(
+                id: id,
+                name: name,
+                description: description,
+                cuisine: cuisine,
+                rating: rating,
+                location: location,
+                foodItems: [], // 🔥 Placeholder, food items will be fetched next
+                imageUrl: imageUrl,
+                preorderSchedule: nil,
+                address: address,
+                ownerId: ownerId,
+                dateSubmitted: dateSubmitted,
+                dateApproved: dateApproved
+            )
+
+            // 🔥 Fetch food items for the kitchen
+            self.fetchFoodItems(for: kitchenId) { foodItems in
+                kitchen.foodItems = foodItems
+                completion(kitchen) // ✅ Return the fully populated kitchen
+            }
+        }
+    }
+
+    // 📌 Add a Food Item
+    func addFoodItem(kitchenId: String, foodItem: FoodItem) {
+        let foodItemsRef = db.collection("kitchens").document(kitchenId).collection("foodItems")
+
+        var newFoodItem = foodItem
+        let document = foodItemsRef.document() // ✅ Generates a new Firestore document
+        newFoodItem.id = document.documentID // ✅ Assigns the Firestore-generated ID
+
+        do {
+            let foodItemData = try Firestore.Encoder().encode(newFoodItem)
+            document.setData(foodItemData) { error in
+                if let error = error {
+                    print("❌ Failed to add food item: \(error.localizedDescription)")
+                } else {
+                    print("✅ Food item added successfully!")
+                }
+            }
+        } catch {
+            print("❌ Error encoding food item: \(error.localizedDescription)")
+        }
+    }
+
+    // 📌 Update a Food Item
+    func updateFoodItem(kitchenId: String, foodItem: FoodItem) {
+        guard let foodItemId = foodItem.id else {
+            print("❌ Error: Cannot update food item without an ID.")
+            return
+        }
+
+        let foodItemRef = db.collection("kitchens").document(kitchenId).collection("foodItems").document(foodItemId)
+
+        do {
+            let foodItemData = try Firestore.Encoder().encode(foodItem)
+            foodItemRef.setData(foodItemData, merge: true) { error in
+                if let error = error {
+                    print("❌ Failed to update food item: \(error.localizedDescription)")
+                } else {
+                    print("✅ Food item updated successfully!")
+                }
+            }
+        } catch {
+            print("❌ Error encoding food item: \(error.localizedDescription)")
+        }
+    }
+
+    // 📌 Delete a Food Item
+    func deleteFoodItem(kitchenId: String, foodItemId: String, completion: @escaping () -> Void) {
+        db.collection("kitchens").document(kitchenId).collection("foodItems")
+            .document(foodItemId).delete { error in
+                if let error = error {
+                    print("❌ Failed to delete food item: \(error.localizedDescription)")
+                }
+                completion()
+            }
+    }
 }
