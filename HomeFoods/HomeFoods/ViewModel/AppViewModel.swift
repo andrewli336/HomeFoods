@@ -170,118 +170,124 @@ class AppViewModel: ObservableObject {
         }
     }
     
-    /// ✅ Fetches all kitchens from Firestore
-    func fetchKitchens(completion: @escaping () -> Void = {}) { // ✅ Default empty closure
+    func fetchKitchens(completion: @escaping () -> Void = {}) {
         db.collection("kitchens").getDocuments { snapshot, error in
             if let error = error {
                 print("❌ Failed to fetch kitchens: \(error.localizedDescription)")
+                completion()
                 return
             }
 
             guard let documents = snapshot?.documents else {
                 print("❌ No kitchens found in Firestore")
+                completion()
                 return
             }
 
-            DispatchQueue.main.async {
-                self.kitchens = documents.map { document in
-                    let data = document.data()
+            var fetchedKitchens: [Kitchen] = [] // ✅ Temporary list to hold fetched kitchens
+            let dispatchGroup = DispatchGroup() // ✅ Ensure all async fetches complete
 
-                    let id = document.documentID
-                    let name = data["name"] as? String ?? "Unnamed Kitchen"
-                    let description = data["description"] as? String ?? "No description"
-                    let cuisine = data["cuisine"] as? String ?? "Unknown"
-                    let rating = data["rating"] as? Double ?? 0.0
-                    let imageUrl = data["imageUrl"] as? String
-                    let location = data["location"] as? GeoPoint ?? GeoPoint(latitude: 0, longitude: 0)
-                    let address = data["address"] as? String
-                    let ownerId = data["ownerId"] as? String ?? "Unknown"
-                    
-                    // ✅ Retrieve dateSubmitted and dateApproved
-                    let dateSubmitted = (data["dateSubmitted"] as? Timestamp)?.dateValue() ?? nil
-                    let dateApproved = (data["dateApproved"] as? Timestamp)?.dateValue() ?? nil
+            for document in documents {
+                let data = document.data()
 
-                    let kitchen = Kitchen(
-                        id: id,
-                        name: name,
-                        description: description,
-                        cuisine: cuisine,
-                        rating: rating,
-                        location: location,
-                        foodItems: [],
-                        imageUrl: imageUrl,
-                        preorderSchedule: nil,
-                        address: address,
-                        ownerId: ownerId,
-                        dateSubmitted: dateSubmitted,
-                        dateApproved: dateApproved
-                    )
+                let id = document.documentID
+                let name = data["name"] as? String ?? "Unnamed Kitchen"
+                let description = data["description"] as? String ?? "No description"
+                let cuisine = data["cuisine"] as? String ?? "Unknown"
+                let rating = data["rating"] as? Double ?? 0.0
+                let imageUrl = data["imageUrl"] as? String
+                let location = data["location"] as? GeoPoint ?? GeoPoint(latitude: 0, longitude: 0)
+                let address = data["address"] as? String
+                let ownerId = data["ownerId"] as? String ?? "Unknown"
+                let dateSubmitted = (data["dateSubmitted"] as? Timestamp)?.dateValue()
+                let dateApproved = (data["dateApproved"] as? Timestamp)?.dateValue()
 
-                    self.fetchFoodItems(for: kitchen)
-                    return kitchen
+                var kitchen = Kitchen(
+                    id: id,
+                    name: name,
+                    description: description,
+                    cuisine: cuisine,
+                    rating: rating,
+                    location: location,
+                    foodItems: [], // 🔥 Placeholder until we fetch real food items
+                    imageUrl: imageUrl,
+                    preorderSchedule: nil,
+                    address: address,
+                    ownerId: ownerId,
+                    dateSubmitted: dateSubmitted,
+                    dateApproved: dateApproved
+                )
+
+                dispatchGroup.enter() // ✅ Track async task
+                self.fetchFoodItems(for: id) { foodItems in
+                    kitchen.foodItems = foodItems // ✅ Assign fetched foodItems
+                    fetchedKitchens.append(kitchen)
+                    dispatchGroup.leave() // ✅ Task done
                 }
+            }
 
-                completion() // ✅ Call completion after fetching
+            dispatchGroup.notify(queue: .main) { // ✅ Runs when ALL food items are fetched
+                self.kitchens = fetchedKitchens
+                completion()
             }
         }
     }
     
-    func fetchFoodItems(for kitchen: Kitchen) {
-        guard let kitchenId = kitchen.id else {
-            print("❌ Error: Kitchen ID is nil, cannot fetch food items.")
-            return
-        }
-
+    func fetchFoodItems(for kitchenId: String, completion: @escaping ([FoodItem]) -> Void) {
         let foodItemsRef = db.collection("kitchens").document(kitchenId).collection("foodItems")
-        
+
         foodItemsRef.getDocuments { snapshot, error in
             if let error = error {
-                print("❌ Failed to fetch food items for \(kitchen.name): \(error.localizedDescription)")
+                print("❌ Failed to fetch food items for kitchen \(kitchenId): \(error.localizedDescription)")
+                completion([]) // ✅ Return empty list if error
                 return
             }
 
             guard let documents = snapshot?.documents else {
-                print("❌ No food items found for \(kitchen.name)")
+                print("❌ No food items found for kitchen \(kitchenId)")
+                completion([])
                 return
             }
 
-            DispatchQueue.main.async {
-                let foodItems: [FoodItem] = documents.compactMap { doc -> FoodItem? in
-                    let data = doc.data()
-                    
-                    guard
-                        let id = doc.documentID as String?,
-                        let name = data["name"] as? String,
-                        let kitchenName = data["kitchenName"] as? String,
-                        let kitchenId = data["kitchenId"] as? String,
-                        let description = data["description"] as? String,
-                        let foodType = data["foodType"] as? String,
-                        let rating = data["rating"] as? Double,
-                        let numRatings = data["numRatings"] as? Int,
-                        let cost = data["cost"] as? Double,
-                        let imageUrl = data["imageUrl"] as? String,
-                        let isFeatured = data["isFeatured"] as? Bool,
-                        let numAvailable = data["numAvailable"] as? Int
-                    else {
-                        print("❌ Failed to parse food item for \(kitchen.name)")
-                        return nil // ✅ Explicitly return nil as FoodItem? type
-                    }
+            let foodItems: [FoodItem] = documents.compactMap { doc in
+                let data = doc.data()
 
-                    return FoodItem(
-                        id: id, name: name, kitchenName: kitchenName, kitchenId: kitchenId, description: description,
-                        foodType: foodType, rating: rating, numRatings: numRatings,
-                        cost: cost, imageUrl: imageUrl, isFeatured: isFeatured, numAvailable: numAvailable
-                    )
+                guard
+                    let id = doc.documentID as String?,
+                    let name = data["name"] as? String,
+                    let kitchenName = data["kitchenName"] as? String,
+                    let kitchenId = data["kitchenId"] as? String,
+                    let description = data["description"] as? String,
+                    let foodType = data["foodType"] as? String,
+                    let rating = data["rating"] as? Double,
+                    let numRatings = data["numRatings"] as? Int,
+                    let cost = data["cost"] as? Double,
+                    let imageUrl = data["imageUrl"] as? String,
+                    let isFeatured = data["isFeatured"] as? Bool,
+                    let numAvailable = data["numAvailable"] as? Int
+                else {
+                    print("❌ Failed to parse food item for kitchen \(kitchenId)")
+                    return nil
                 }
-                
-                // ✅ Update the kitchen in the kitchens list
-                if let index = self.kitchens.firstIndex(where: { $0.id == kitchenId }) {
-                    var updatedKitchen = self.kitchens[index] // Create a mutable copy
-                    updatedKitchen.foodItems = foodItems // Update the food items
-                    self.kitchens[index] = updatedKitchen // Replace the old kitchen object
-                    print("✅ Loaded \(foodItems.count) food items for \(kitchen.name)")
-                }
+
+                return FoodItem(
+                    id: id,
+                    name: name,
+                    kitchenName: kitchenName,
+                    kitchenId: kitchenId,
+                    description: description,
+                    foodType: foodType,
+                    rating: rating,
+                    numRatings: numRatings,
+                    cost: cost,
+                    imageUrl: imageUrl,
+                    isFeatured: isFeatured,
+                    numAvailable: numAvailable
+                )
             }
+
+            print("✅ Loaded \(foodItems.count) food items for kitchen \(kitchenId)")
+            completion(foodItems)
         }
     }
 
