@@ -748,18 +748,27 @@ class AppViewModel: ObservableObject {
                 return
             }
             
-            guard let document = document,
-                  let data = document.data(),
-                  let scheduleData = data["preorderSchedule"] as? [String: Any] else {
+            guard let document = document else {
+                print("❌ No document found for kitchen")
                 completion(nil)
                 return
             }
+            
+            
+            guard let data = document.data(),
+                  let scheduleData = data["preorderSchedule"] as? [String: Any] else {
+                print("❌ No schedule data found in document")
+                completion(nil)
+                return
+            }
+            
             
             do {
                 let schedule = try Firestore.Decoder().decode(PreorderSchedule.self, from: scheduleData)
                 completion(schedule)
             } catch {
                 print("❌ Error decoding preorder schedule: \(error.localizedDescription)")
+                print("🔍 Decoding error details: \(error)")
                 completion(nil)
             }
         }

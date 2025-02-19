@@ -17,13 +17,28 @@ struct PreorderView: View {
     
     var highlightedDates: [Date] {
         // Get all dates that have available food items
-        guard let schedule = schedule else { return [] }
-        return schedule.dates.compactMap { Date.fromScheduleKey($0.key) }
+        guard let schedule = schedule else {
+            print("⚠️ No schedule available for highlighted dates")
+            return []
+        }
+        
+        let dates = schedule.dates.compactMap { Date.fromScheduleKey($0.key) }
+        print("🗓 Highlighted dates count: \(dates.count)")
+        dates.forEach { print("   📆 Highlighted date: \($0.scheduleKey)") }
+        return dates
     }
-    
+
     var availableFoodItems: [PreorderFood] {
-        guard let schedule = schedule else { return [] }
-        return schedule.dates[selectedDate.scheduleKey] ?? []
+        guard let schedule = schedule else {
+            print("⚠️ No schedule available for food items")
+            return []
+        }
+        
+        let dateKey = selectedDate.scheduleKey
+        print("🔎 Looking for foods on date: \(dateKey)")
+        let foods = schedule.dates[dateKey] ?? []
+        print("🍽 Found \(foods.count) foods for \(dateKey)")
+        return foods
     }
     
     var body: some View {
@@ -65,15 +80,17 @@ struct PreorderView: View {
     private func loadScheduleAndFoodItems() {
         isLoading = true
         
-        // Load schedule
-        viewModel.fetchPreorderSchedule(kitchenId: kitchen.id ?? "") { fetchedSchedule in
-            schedule = fetchedSchedule
-            
-            // Load food items
-            viewModel.fetchFoodItems(for: kitchen.id ?? "") { items in
-                DispatchQueue.main.async {
-                    foodItems = items
-                    isLoading = false
+        let kitchenId = kitchen.id ?? ""
+        
+        viewModel.fetchPreorderSchedule(kitchenId: kitchenId) { fetchedSchedule in
+            DispatchQueue.main.async {
+                self.schedule = fetchedSchedule ?? PreorderSchedule(dates: [:])
+                
+                self.viewModel.fetchFoodItems(for: kitchenId) { items in
+                    DispatchQueue.main.async {
+                        self.foodItems = items
+                        self.isLoading = false
+                    }
                 }
             }
         }
