@@ -12,6 +12,7 @@ class OrderViewModel: ObservableObject {
     @Published var userOrders: [Order] = [] // User's order history
     @Published var kitchenOrders: [Order] = [] // Kitchen's order history
     @Published var cartOrder: Order? = nil // ✅ Only one cart order at a time
+    @Published var isCartCleared: Bool = false  // Add this new state
 
     private let db = Firestore.firestore()
     
@@ -110,11 +111,16 @@ class OrderViewModel: ObservableObject {
         }
     }
 
-    // ✅ Clear cart after placing order
+    
+    
     func clearCart() {
-        DispatchQueue.main.async {
-            self.cartOrder = nil
-        }
+        isCartCleared = true  // Set this flag instead of clearing cartOrder
+        // Only clear cartOrder when returning to the main view
+    }
+    
+    func resetCart() {
+        cartOrder = nil
+        isCartCleared = false
     }
 
     // ✅ Place order and save to Firestore

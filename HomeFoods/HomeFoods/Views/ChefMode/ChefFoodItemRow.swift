@@ -54,7 +54,6 @@ struct ChefFoodItemRow: View {
         }
         .padding()
         .background(RoundedRectangle(cornerRadius: 10).fill(Color.white))
-        .shadow(radius: 2)
         .padding(.horizontal)
     }
 }

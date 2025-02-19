@@ -6,31 +6,162 @@
 //
 
 import SwiftUI
-
 struct PreorderView: View {
-    @State private var selectedDate: Date = Date() // Tracks the selected date
-    let highlightedDates: [Date] // Dates to highlight
-
+    @EnvironmentObject var viewModel: AppViewModel
+    @State private var selectedDate: Date = Date()
+    @State private var schedule: PreorderSchedule?
+    @State private var isLoading = true
+    @State private var foodItems: [FoodItem] = []
+    
+    let kitchen: Kitchen
+    
+    var highlightedDates: [Date] {
+        // Get all dates that have available food items
+        guard let schedule = schedule else { return [] }
+        return schedule.dates.compactMap { Date.fromScheduleKey($0.key) }
+    }
+    
+    var availableFoodItems: [PreorderFood] {
+        guard let schedule = schedule else { return [] }
+        return schedule.dates[selectedDate.scheduleKey] ?? []
+    }
+    
     var body: some View {
         VStack(spacing: 20) {
             Text("Select a Preorder Date")
                 .font(.headline)
-
+            
             CustomCalendarView(selectedDate: $selectedDate, highlightedDates: highlightedDates)
                 .padding()
-
-            Text("You selected: \(formattedDate(selectedDate))")
-                .font(.subheadline)
-                .foregroundColor(.gray)
+            
+            if isLoading {
+                ProgressView()
+            } else if availableFoodItems.isEmpty {
+                Text("No food items available for \(formattedDate(selectedDate))")
+                    .font(.subheadline)
+                    .foregroundColor(.gray)
+            } else {
+                ScrollView {
+                    VStack(spacing: 16) {
+                        ForEach(availableFoodItems, id: \.foodItemId) { preorderFood in
+                            if let foodItem = getFoodItem(id: preorderFood.foodItemId) {
+                                PreorderFoodItemView(
+                                    foodItem: foodItem,
+                                    availableTimes: preorderFood.availableTimes
+                                )
+                            }
+                        }
+                    }
+                    .padding()
+                }
+            }
         }
         .padding()
+        .onAppear {
+            loadScheduleAndFoodItems()
+        }
     }
-
-    // Format the selected date for display
-    func formattedDate(_ date: Date) -> String {
+    
+    private func loadScheduleAndFoodItems() {
+        isLoading = true
+        
+        // Load schedule
+        viewModel.fetchPreorderSchedule(kitchenId: kitchen.id ?? "") { fetchedSchedule in
+            schedule = fetchedSchedule
+            
+            // Load food items
+            viewModel.fetchFoodItems(for: kitchen.id ?? "") { items in
+                DispatchQueue.main.async {
+                    foodItems = items
+                    isLoading = false
+                }
+            }
+        }
+    }
+    
+    private func getFoodItem(id: String) -> FoodItem? {
+        foodItems.first { $0.id == id }
+    }
+    
+    private func formattedDate(_ date: Date) -> String {
         let formatter = DateFormatter()
         formatter.dateStyle = .long
         return formatter.string(from: date)
+    }
+}
+
+struct PreorderFoodItemView: View {
+    let foodItem: FoodItem
+    let availableTimes: [String]
+    @State private var selectedTime: String?
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 12) {
+                AsyncImage(url: URL(string: foodItem.imageUrl)) { image in
+                    image
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 80, height: 80)
+                        .clipShape(RoundedRectangle(cornerRadius: 10))
+                } placeholder: {
+                    Color.gray.opacity(0.2)
+                        .frame(width: 80, height: 80)
+                        .clipShape(RoundedRectangle(cornerRadius: 10))
+                }
+                
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(foodItem.name)
+                        .font(.headline)
+                    Text(foodItem.description)
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                        .lineLimit(2)
+                    Text("$\(foodItem.cost, specifier: "%.2f")")
+                        .font(.subheadline)
+                        .foregroundColor(.blue)
+                }
+            }
+            
+            Text("Available Times:")
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+            
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    ForEach(availableTimes, id: \.self) { time in
+                        Button(action: {
+                            selectedTime = time
+                        }) {
+                            Text(time)
+                                .font(.caption)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 6)
+                                .background(selectedTime == time ? Color.blue : Color.blue.opacity(0.1))
+                                .foregroundColor(selectedTime == time ? .white : .blue)
+                                .clipShape(Capsule())
+                        }
+                    }
+                }
+            }
+            
+            if selectedTime != nil {
+                Button(action: {
+                    // Add to cart logic here
+                }) {
+                    Text("Add to Cart")
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.blue)
+                        .foregroundColor(.white)
+                        .cornerRadius(10)
+                }
+            }
+        }
+        .padding()
+        .background(Color.white)
+        .cornerRadius(12)
+        .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 2)
     }
 }
 
@@ -103,14 +234,4 @@ struct CalendarDateView: View {
             .cornerRadius(5)
             .foregroundColor(isSelected ? .white : .black)
     }
-}
-
-#Preview {
-    let highlightedDates = [
-        Calendar.current.date(byAdding: .day, value: 1, to: Date())!,
-        Calendar.current.date(byAdding: .day, value: 3, to: Date())!,
-        Calendar.current.date(byAdding: .day, value: 5, to: Date())!
-    ]
-
-    PreorderView(highlightedDates: highlightedDates)
 }

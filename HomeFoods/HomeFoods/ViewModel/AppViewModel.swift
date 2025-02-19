@@ -717,4 +717,64 @@ class AppViewModel: ObservableObject {
                 completion()
             }
     }
+    
+    func updatePreorderSchedule(kitchenId: String, schedule: PreorderSchedule, completion: @escaping (Bool) -> Void) {
+        let kitchenRef = db.collection("kitchens").document(kitchenId)
+        
+        do {
+            let scheduleData = try Firestore.Encoder().encode(schedule)
+            kitchenRef.updateData(["preorderSchedule": scheduleData]) { error in
+                if let error = error {
+                    print("❌ Failed to update preorder schedule: \(error.localizedDescription)")
+                    completion(false)
+                } else {
+                    print("✅ Preorder schedule updated successfully!")
+                    completion(true)
+                }
+            }
+        } catch {
+            print("❌ Error encoding preorder schedule: \(error.localizedDescription)")
+            completion(false)
+        }
+    }
+
+    func fetchPreorderSchedule(kitchenId: String, completion: @escaping (PreorderSchedule?) -> Void) {
+        let kitchenRef = db.collection("kitchens").document(kitchenId)
+        
+        kitchenRef.getDocument { document, error in
+            if let error = error {
+                print("❌ Failed to fetch preorder schedule: \(error.localizedDescription)")
+                completion(nil)
+                return
+            }
+            
+            guard let document = document,
+                  let data = document.data(),
+                  let scheduleData = data["preorderSchedule"] as? [String: Any] else {
+                completion(nil)
+                return
+            }
+            
+            do {
+                let schedule = try Firestore.Decoder().decode(PreorderSchedule.self, from: scheduleData)
+                completion(schedule)
+            } catch {
+                print("❌ Error decoding preorder schedule: \(error.localizedDescription)")
+                completion(nil)
+            }
+        }
+    }
+
+    // Helper function to add food items to a specific date
+    func addFoodToSchedule(kitchenId: String, date: Date, food: PreorderFood, completion: @escaping (Bool) -> Void) {
+        fetchPreorderSchedule(kitchenId: kitchenId) { schedule in
+            var updatedSchedule = schedule ?? PreorderSchedule(dates: [:])
+            let dateKey = date.scheduleKey
+            var foodsForDate = updatedSchedule.dates[dateKey] ?? []
+            foodsForDate.append(food)
+            updatedSchedule.dates[dateKey] = foodsForDate
+            
+            self.updatePreorderSchedule(kitchenId: kitchenId, schedule: updatedSchedule, completion: completion)
+        }
+    }
 }

@@ -17,7 +17,10 @@ struct CartSheet: View {
     var body: some View {
         NavigationView {
             if showConfirmation {
-                OrderConfirmationView()
+                OrderConfirmationView(showCartSheet: $showCartSheet)
+                    .onDisappear {
+                        orderViewModel.resetCart()
+                    }
             } else {
                 VStack(alignment: .leading, spacing: 20) {
                     Text(orderViewModel.cartOrder?.kitchenName ?? "Your Cart")

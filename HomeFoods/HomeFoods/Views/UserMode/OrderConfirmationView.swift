@@ -8,39 +8,31 @@
 import SwiftUI
 
 struct OrderConfirmationView: View {
-    @Environment(\.dismiss) var dismiss // ✅ Enables dismissal of the current view
-
+    @Binding var showCartSheet: Bool
+    
     var body: some View {
         VStack(spacing: 20) {
             Image(systemName: "checkmark.circle.fill")
-                .font(.system(size: 100))
+                .font(.system(size: 60))
                 .foregroundColor(.green)
-
-            Text("Order Placed!")
-                .font(.largeTitle)
+            
+            Text("Order Confirmed!")
+                .font(.title)
                 .bold()
-
-            Text("Thank you for your order. You’ll receive a confirmation email shortly.")
-                .font(.body)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal)
-
-            Spacer()
-
-            Button(action: {
-                dismiss() // ✅ Dismiss the confirmation screen and go back to Home
-            }) {
-                Text("Back to Home")
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.red)
-                    .foregroundColor(.white)
-                    .cornerRadius(10)
+            
+            Text("Thank you for your order.")
+                .foregroundColor(.secondary)
+            
+            Button("Done") {
+                showCartSheet = false
             }
+            .padding()
+            .frame(maxWidth: .infinity)
+            .background(Color.blue)
+            .foregroundColor(.white)
+            .cornerRadius(10)
             .padding(.horizontal)
         }
         .padding()
-        .navigationTitle("Order Confirmation")
-        .navigationBarTitleDisplayMode(.inline)
     }
 }

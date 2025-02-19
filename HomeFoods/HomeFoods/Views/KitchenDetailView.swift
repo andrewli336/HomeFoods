@@ -246,7 +246,7 @@ struct OrderTabsView: View {
             if selectedTab == .grabAndGo {
                 GrabAndGoView(foodItems: kitchen.foodItems.filter { $0.numAvailable > 0 })
             } else if selectedTab == .preorder {
-                PreorderView(highlightedDates: [Calendar.current.date(byAdding: .day, value: 1, to: Date())!])
+                PreorderView(kitchen: kitchen)
             } else if selectedTab == .request {
                 RequestView(foodItems: kitchen.foodItems)
             }
