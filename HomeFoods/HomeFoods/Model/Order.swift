@@ -10,6 +10,7 @@ import FirebaseFirestore
 
 struct OrderedFoodItem: Identifiable, Codable, Equatable {
     let id: String
+    let foodItemId: String
     let name: String
     let quantity: Int
     let price: Double
@@ -17,15 +18,16 @@ struct OrderedFoodItem: Identifiable, Codable, Equatable {
     let specialInstructions: String?
     let pickupTime: String?
     
-    static func == (lhs: OrderedFoodItem, rhs: OrderedFoodItem) -> Bool {
-        lhs.id == rhs.id &&
-        lhs.name == rhs.name &&
-        lhs.quantity == rhs.quantity &&
-        lhs.price == rhs.price &&
-        lhs.imageUrl == rhs.imageUrl &&
-        lhs.specialInstructions == rhs.specialInstructions &&
-        lhs.pickupTime == rhs.pickupTime
-    }
+    init(foodItemId: String, name: String, quantity: Int, price: Double, imageUrl: String?, specialInstructions: String?, pickupTime: String?) {
+            self.id = UUID().uuidString  // Generate unique ID
+            self.foodItemId = foodItemId // Store original food item ID
+            self.name = name
+            self.quantity = quantity
+            self.price = price
+            self.imageUrl = imageUrl
+            self.specialInstructions = specialInstructions
+            self.pickupTime = pickupTime
+        }
 }
 
 struct Order: Identifiable, Codable, Equatable {

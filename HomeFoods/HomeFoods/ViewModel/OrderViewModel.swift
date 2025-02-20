@@ -59,14 +59,15 @@ class OrderViewModel: ObservableObject {
         }
 
         let newOrderedItem = OrderedFoodItem(
-            id: foodItemId,
+            foodItemId: foodItemId,  // Pass the original food item ID
             name: foodItem.name,
             quantity: quantity,
             price: foodItem.cost,
             imageUrl: foodItem.imageUrl,
             specialInstructions: specialInstructions,
-            pickupTime: pickupTime // Include pickup time in the ordered item
+            pickupTime: pickupTime
         )
+        // Note: The OrderedFoodItem init will automatically generate a UUID for the id property
 
         DispatchQueue.main.async {
             if let existingOrder = self.cartOrder {
@@ -81,12 +82,10 @@ class OrderViewModel: ObservableObject {
                         datePlaced: Date(),
                         datePickedUp: nil,
                         orderedFoodItems: [newOrderedItem],
-                        orderType: orderType // Use the provided order type
+                        orderType: orderType
                     )
                 } else if existingOrder.orderType != orderType {
-                    // If trying to add a different order type to cart
                     print("❌ Cannot mix different order types in the same cart")
-                    // You might want to handle this case differently, like showing an alert
                     return
                 } else {
                     // Add to the existing order
@@ -102,7 +101,7 @@ class OrderViewModel: ObservableObject {
                     datePlaced: Date(),
                     datePickedUp: nil,
                     orderedFoodItems: [newOrderedItem],
-                    orderType: orderType // Use the provided order type
+                    orderType: orderType
                 )
             }
 
@@ -212,13 +211,22 @@ class OrderViewModel: ObservableObject {
 
                     // Extract ordered food items with pickup time
                     let orderedFoodItemsData = data["orderedFoodItems"] as? [[String: Any]] ?? []
-                    let orderedFoodItems: [OrderedFoodItem] = orderedFoodItemsData.compactMap { itemData in
+                    let orderedFoodItems: [OrderedFoodItem] = orderedFoodItemsData.map { itemData in
                         guard let id = itemData["id"] as? String,
                               let name = itemData["name"] as? String,
                               let price = itemData["price"] as? Double,
                               let quantity = itemData["quantity"] as? Int
                         else {
-                            return nil
+                            // Return a placeholder item if data is invalid
+                            return OrderedFoodItem(
+                                foodItemId: "invalid",
+                                name: "Unknown Item",
+                                quantity: 1,
+                                price: 0,
+                                imageUrl: nil,
+                                specialInstructions: nil,
+                                pickupTime: nil
+                            )
                         }
                         
                         let imageUrl = itemData["imageUrl"] as? String
@@ -226,7 +234,7 @@ class OrderViewModel: ObservableObject {
                         let pickupTime = itemData["pickupTime"] as? String
                         
                         return OrderedFoodItem(
-                            id: id,
+                            foodItemId: id,
                             name: name,
                             quantity: quantity,
                             price: price,

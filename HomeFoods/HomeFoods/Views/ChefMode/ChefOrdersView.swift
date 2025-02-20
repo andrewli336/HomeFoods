@@ -8,119 +8,71 @@
 import SwiftUI
 
 struct ChefOrdersView: View {
-    @EnvironmentObject var appViewModel: AppViewModel
-    @EnvironmentObject var orderViewModel: OrderViewModel
-    @State private var kitchenOrders: [Order] = [] // ✅ Stores fetched orders
-    @State private var isLoading = false // ✅ Track loading state
-
+    @State private var selectedSection = 0
+    
     var body: some View {
         NavigationView {
-            VStack {
-                if isLoading {
-                    ProgressView("Loading orders...") // ✅ Show a loading indicator
-                        .padding()
-                } else if kitchenOrders.isEmpty {
-                    Text("No orders yet")
-                        .font(.title2)
-                        .foregroundColor(.gray)
-                        .padding()
-                } else {
-                    OrderListView(orders: kitchenOrders, refreshAction: fetchOrders) // ✅ Extracted list
+            VStack(spacing: 0) {
+                // Segmented Picker
+                Picker("Order Type", selection: $selectedSection) {
+                    Text("Preorders").tag(0)
+                    Text("Requests").tag(1)
+                    Text("Completed").tag(2)
+                }
+                .pickerStyle(SegmentedPickerStyle())
+                .padding()
+                
+                // Content based on selection
+                switch selectedSection {
+                case 0:
+                    ChefPreorderView()
+                case 1:
+                    ChefRequestsView()
+                case 2:
+                    ChefCompletedView()
+                default:
+                    EmptyView()
                 }
             }
-            .navigationTitle("Manage Orders")
-            .onAppear {
-                fetchOrders()
-            }
-        }
-    }
-
-    /// ✅ Fetch orders for the current kitchen
-    private func fetchOrders() {
-        guard let kitchenId = appViewModel.currentUser?.kitchenId else {
-            print("❌ No kitchen ID found for current user")
-            return
-        }
-
-        isLoading = true
-        orderViewModel.fetchKitchenOrders(for: kitchenId) { orders in
-            DispatchQueue.main.async {
-                self.kitchenOrders = orders
-                self.isLoading = false
-            }
+            .navigationTitle("Kitchen Orders")
         }
     }
 }
 
-/// ✅ Extracted Order List View
-struct OrderListView: View {
-    let orders: [Order]
-    let refreshAction: () -> Void
-
+// Placeholder view for Requests
+struct ChefRequestsView: View {
     var body: some View {
-        List {
-            ForEach(orders) { order in
-                OrderSectionView(order: order) // ✅ Extracted order section
-            }
-        }
-        .refreshable {
-            refreshAction()
-        }
-    }
-}
-
-struct OrderSectionView: View {
-    let order: Order
-
-    var body: some View {
-        Section(header: Text("Order ID: \(order.id?.prefix(6) ?? "N/A")")) { // ✅ Safe Unwrapping
-            ForEach(order.orderedFoodItems) { item in
-                OrderItemRow(item: item)
-            }
-
-            Text("Order Type: \(order.orderType.rawValue)") // ✅ Ensure proper display
+        VStack {
+            Image(systemName: "bell.fill")
+                .font(.system(size: 50))
+                .foregroundColor(.gray)
+                .padding()
+            Text("Requests Coming Soon")
+                .font(.title2)
+            Text("This feature will allow you to manage special food requests")
                 .font(.subheadline)
-                .foregroundColor(.blue)
+                .foregroundColor(.gray)
+                .multilineTextAlignment(.center)
+                .padding()
         }
     }
 }
 
-/// ✅ Extracted Order Item Row
-struct OrderItemRow: View {
-    let item: OrderedFoodItem
-
+// Placeholder view for Completed Orders
+struct ChefCompletedView: View {
     var body: some View {
-        HStack {
-            if let imageUrl = item.imageUrl {
-                AsyncImage(url: URL(string: imageUrl)) { phase in
-                    if let image = phase.image {
-                        image.resizable()
-                            .scaledToFill()
-                            .frame(width: 50, height: 50)
-                            .clipShape(RoundedRectangle(cornerRadius: 10))
-                    } else {
-                        Color.gray
-                            .frame(width: 50, height: 50)
-                            .clipShape(RoundedRectangle(cornerRadius: 10))
-                    }
-                }
-            } else {
-                Color.gray
-                    .frame(width: 50, height: 50)
-                    .clipShape(RoundedRectangle(cornerRadius: 10))
-            }
-
-            VStack(alignment: .leading) {
-                Text(item.name)
-                    .font(.headline)
-                Text("\(item.quantity) × $\(item.price, specifier: "%.2f")")
-                    .font(.subheadline)
-                    .foregroundColor(.gray)
-            }
-            Spacer()
-            Text("$\(Double(item.quantity) * item.price, specifier: "%.2f")")
-                .bold()
+        VStack {
+            Image(systemName: "checkmark.circle.fill")
+                .font(.system(size: 50))
+                .foregroundColor(.gray)
+                .padding()
+            Text("Completed Orders Coming Soon")
+                .font(.title2)
+            Text("This feature will show your history of completed orders")
+                .font(.subheadline)
+                .foregroundColor(.gray)
+                .multilineTextAlignment(.center)
+                .padding()
         }
-        .padding(.vertical, 5)
     }
 }
