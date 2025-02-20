@@ -191,11 +191,45 @@ struct PreorderFoodItemView: View {
 struct CustomCalendarView: View {
     @Binding var selectedDate: Date
     let highlightedDates: [Date]
+    @State private var currentMonth: Date
     private let calendar = Calendar.current
     private let daysOfWeek = Calendar.current.shortWeekdaySymbols
+    private let dateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMMM yyyy"
+        return formatter
+    }()
+
+    init(selectedDate: Binding<Date>, highlightedDates: [Date]) {
+        self._selectedDate = selectedDate
+        self.highlightedDates = highlightedDates
+        self._currentMonth = State(initialValue: selectedDate.wrappedValue)
+    }
 
     var body: some View {
-        VStack {
+        VStack(spacing: 20) {
+            // Month navigation header
+            HStack {
+                Button(action: previousMonth) {
+                    Image(systemName: "chevron.left")
+                        .foregroundColor(.blue)
+                }
+                
+                Spacer()
+                
+                Text(dateFormatter.string(from: currentMonth))
+                    .font(.title3)
+                    .bold()
+                
+                Spacer()
+                
+                Button(action: nextMonth) {
+                    Image(systemName: "chevron.right")
+                        .foregroundColor(.blue)
+                }
+            }
+            .padding(.horizontal)
+
             // Weekday headers
             HStack {
                 ForEach(daysOfWeek, id: \.self) { day in
@@ -208,15 +242,23 @@ struct CustomCalendarView: View {
 
             // Calendar grid
             let dates = generateDates()
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 7)) {
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 7), spacing: 8) {
                 ForEach(dates, id: \.self) { date in
-                    CalendarDateView(
-                        date: date,
-                        isSelected: calendar.isDate(date, inSameDayAs: selectedDate),
-                        isHighlighted: highlightedDates.contains { calendar.isDate($0, inSameDayAs: date) }
-                    )
-                    .onTapGesture {
-                        selectedDate = date // Update selected date on tap
+                    if calendar.component(.month, from: date) == calendar.component(.month, from: currentMonth) {
+                        CalendarDateView(
+                            date: date,
+                            isSelected: calendar.isDate(date, inSameDayAs: selectedDate),
+                            isHighlighted: highlightedDates.contains { calendar.isDate($0, inSameDayAs: date) }
+                        )
+                        .onTapGesture {
+                            selectedDate = date
+                        }
+                    } else {
+                        // Empty view for dates outside current month
+                        Text("\(calendar.component(.day, from: date))")
+                            .font(.body)
+                            .frame(maxWidth: .infinity, maxHeight: 40)
+                            .foregroundColor(.gray.opacity(0.3))
                     }
                 }
             }
@@ -227,15 +269,69 @@ struct CustomCalendarView: View {
         .shadow(color: Color.black.opacity(0.1), radius: 3, x: 0, y: 2)
     }
 
-    // Generate all dates for the current month
+    private func nextMonth() {
+        if let newDate = calendar.date(byAdding: .month, value: 1, to: currentMonth) {
+            currentMonth = newDate
+        }
+    }
+
+    private func previousMonth() {
+        if let newDate = calendar.date(byAdding: .month, value: -1, to: currentMonth) {
+            currentMonth = newDate
+        }
+    }
+
     private func generateDates() -> [Date] {
-        guard let monthRange = calendar.range(of: .day, in: .month, for: Date()) else {
+        let components = calendar.dateComponents([.year, .month], from: currentMonth)
+        guard let startOfMonth = calendar.date(from: components),
+              let range = calendar.range(of: .day, in: .month, for: startOfMonth) else {
             return []
         }
-        let startOfMonth = calendar.date(from: calendar.dateComponents([.year, .month], from: Date()))!
-        return monthRange.compactMap { day -> Date? in
-            calendar.date(byAdding: .day, value: day - 1, to: startOfMonth)
+
+        // Get the first day of the month
+        let firstDayOfMonth = calendar.component(.weekday, from: startOfMonth)
+        
+        // Calculate days from previous month to show
+        let daysFromPreviousMonth = firstDayOfMonth - 1
+        
+        // Get the last day of the month
+        guard let lastDayOfMonth = calendar.date(byAdding: .day, value: range.count - 1, to: startOfMonth) else {
+            return []
         }
+        
+        // Calculate remaining days to show from next month to complete the grid
+        let lastWeekday = calendar.component(.weekday, from: lastDayOfMonth)
+        let daysFromNextMonth = 7 - lastWeekday
+        
+        // Generate all dates
+        var dates: [Date] = []
+        
+        // Add days from previous month
+        if let firstDate = calendar.date(byAdding: .day, value: -daysFromPreviousMonth, to: startOfMonth) {
+            for dayOffset in 0..<daysFromPreviousMonth {
+                if let date = calendar.date(byAdding: .day, value: dayOffset, to: firstDate) {
+                    dates.append(date)
+                }
+            }
+        }
+        
+        // Add days from current month
+        for dayOffset in 0..<range.count {
+            if let date = calendar.date(byAdding: .day, value: dayOffset, to: startOfMonth) {
+                dates.append(date)
+            }
+        }
+        
+        // Add days from next month
+        if let firstDateOfNextMonth = calendar.date(byAdding: .day, value: 1, to: lastDayOfMonth) {
+            for dayOffset in 0..<daysFromNextMonth {
+                if let date = calendar.date(byAdding: .day, value: dayOffset, to: firstDateOfNextMonth) {
+                    dates.append(date)
+                }
+            }
+        }
+        
+        return dates
     }
 }
 
