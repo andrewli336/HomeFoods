@@ -182,12 +182,18 @@ struct AddPreorderFoodView: View {
                     } else {
                         ForEach(foodItems, id: \.id) { food in
                             HStack {
-                                AsyncImage(url: URL(string: food.imageUrl)) { image in
-                                    image.resizable()
-                                        .scaledToFill()
-                                        .frame(width: 50, height: 50)
-                                        .clipShape(RoundedRectangle(cornerRadius: 8))
-                                } placeholder: {
+                                if let imageUrl = food.imageUrl {
+                                    AsyncImage(url: URL(string: imageUrl)) { image in
+                                        image.resizable()
+                                            .scaledToFill()
+                                            .frame(width: 50, height: 50)
+                                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                                    } placeholder: {
+                                        Color.gray.opacity(0.2)
+                                            .frame(width: 50, height: 50)
+                                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                                    }
+                                } else {
                                     Color.gray.opacity(0.2)
                                         .frame(width: 50, height: 50)
                                         .clipShape(RoundedRectangle(cornerRadius: 8))

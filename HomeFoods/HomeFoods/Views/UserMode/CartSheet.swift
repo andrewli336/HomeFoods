@@ -103,18 +103,25 @@ struct CartOrderItemView: View {
 
     var body: some View {
         HStack {
-            AsyncImage(url: URL(string: foodItem.imageUrl)) { phase in
-                if let image = phase.image {
-                    image
-                        .resizable()
-                        .frame(width: 50, height: 50)
-                        .cornerRadius(8)
-                } else {
-                    Color.gray.opacity(0.3)
-                        .frame(width: 50, height: 50)
-                        .cornerRadius(8)
-                        .overlay(Text("N/A").foregroundColor(.white))
+            if let imageUrl = foodItem.imageUrl {
+                AsyncImage(url: URL(string: imageUrl)) { phase in
+                    if let image = phase.image {
+                        image
+                            .resizable()
+                            .frame(width: 50, height: 50)
+                            .cornerRadius(8)
+                    } else {
+                        Color.gray.opacity(0.3)
+                            .frame(width: 50, height: 50)
+                            .cornerRadius(8)
+                            .overlay(Text("N/A").foregroundColor(.white))
+                    }
                 }
+            } else {
+                Color.gray.opacity(0.3)
+                    .frame(width: 50, height: 50)
+                    .cornerRadius(8)
+                    .overlay(Text("N/A").foregroundColor(.white))
             }
 
             VStack(alignment: .leading, spacing: 5) {

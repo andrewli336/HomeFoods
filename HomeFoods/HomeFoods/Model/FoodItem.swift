@@ -10,27 +10,25 @@ import SwiftUI
 import FirebaseFirestore
 
 struct FoodItem: Identifiable, Codable, Hashable {
-    @DocumentID var id: String? // Firestore document ID
-    let name: String
-    let kitchenName: String
-    let kitchenId: String
-    let description: String
-    let foodType: String
-    let rating: Double
-    let numRatings: Int
-    let cost: Double
-    let imageUrl: String // URL to the image in Firebase Storage
-    let isFeatured: Bool
-    let numAvailable: Int
+    @DocumentID var id: String? // Need this to be var, not let
+    var name: String           // Changed to var
+    var kitchenName: String    // Changed to var
+    var kitchenId: String      // Changed to var
+    var description: String?    // Changed to var
+    var foodType: String       // Changed to var
+    var rating: Double         // Changed to var
+    var numRatings: Int        // Changed to var
+    var cost: Double          // Changed to var
+    var imageUrl: String?     // Changed to var
+    var isFeatured: Bool      // Changed to var
+    var numAvailable: Int     // Changed to var
     
-    // Since we have a property wrapper (@DocumentID), we need to explicitly implement Hashable
     func hash(into hasher: inout Hasher) {
         hasher.combine(id)
         hasher.combine(name)
         hasher.combine(kitchenId)
     }
     
-    // Implement Equatable (required by Hashable)
     static func == (lhs: FoodItem, rhs: FoodItem) -> Bool {
         return lhs.id == rhs.id &&
                lhs.name == rhs.name &&

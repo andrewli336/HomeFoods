@@ -14,7 +14,7 @@ struct Order: Identifiable, Codable {
     let kitchenId: String // Kitchen the order belongs to
     let kitchenName: String
     let datePlaced: Date // Date when the order was placed
-    let datePickedUp: Date? // Optional, if not yet picked up
+    var datePickedUp: Date? // Optional, if not yet picked up
     var orderedFoodItems: [OrderedFoodItem] // Simplify FoodItem to OrderedFoodItem for order storage
     let orderType: OrderType
     var totalCost: Double {
@@ -25,9 +25,9 @@ struct Order: Identifiable, Codable {
 struct OrderedFoodItem: Identifiable, Codable {
     let id: String // Food item ID
     let name: String
-    let quantity: Int
+    var quantity: Int
     let price: Double
-    let imageUrl: String
+    let imageUrl: String?
     var specialInstructions: String? = nil // Optional instructions
 }
 

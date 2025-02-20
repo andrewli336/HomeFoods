@@ -17,21 +17,28 @@ struct FoodItemSheet: View {
     var body: some View {
         VStack(spacing: 20) {
             // 📌 Food Image
-            AsyncImage(url: URL(string: foodItem.imageUrl)) { phase in
-                if let image = phase.image {
-                    image
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                        .frame(height: 200)
-                        .clipped()
-                } else if phase.error != nil {
-                    Color.red
-                        .frame(height: 200)
-                        .overlay(Text("Failed to load image").foregroundColor(.white))
-                } else {
-                    ProgressView()
-                        .frame(height: 200)
+            if let imageUrl = foodItem.imageUrl {
+                AsyncImage(url: URL(string: imageUrl)) { phase in
+                    if let image = phase.image {
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(height: 200)
+                            .clipped()
+                    } else if phase.error != nil {
+                        Color.red
+                            .frame(height: 200)
+                            .overlay(Text("Failed to load image").foregroundColor(.white))
+                    } else {
+                        ProgressView()
+                            .frame(height: 200)
+                    }
                 }
+            } else {
+                // Handle case when there's no image URL
+                Color.gray
+                    .frame(height: 200)
+                    .overlay(Text("No image available").foregroundColor(.white))
             }
 
             // 📌 Title and Description
@@ -39,7 +46,7 @@ struct FoodItemSheet: View {
                 Text(foodItem.name)
                     .font(.title)
                     .bold()
-                Text(foodItem.description)
+                Text(foodItem.description ?? "")
                     .font(.body)
                     .foregroundColor(.gray)
             }

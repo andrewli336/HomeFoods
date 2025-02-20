@@ -17,7 +17,7 @@ struct GrabAndGoFoodItemRow: View {
             VStack(alignment: .leading, spacing: 8) {
                 Text(foodItem.name)
                     .font(.headline)
-                Text(foodItem.description)
+                Text(foodItem.description ?? "")
                     .font(.subheadline)
                     .foregroundColor(.gray)
                     .lineLimit(2)
@@ -39,25 +39,33 @@ struct GrabAndGoFoodItemRow: View {
             
             ZStack {
                 // Food item image using AsyncImage
-                AsyncImage(url: URL(string: foodItem.imageUrl)) { phase in
-                    if let image = phase.image {
-                        image
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                            .frame(width: 100, height: 100) // Smaller size for less height
-                            .cornerRadius(10)
-                            .clipped()
-                    } else if phase.error != nil {
-                        // Placeholder for error
-                        Color.red
-                            .frame(width: 100, height: 100)
-                            .cornerRadius(10)
-                            .overlay(Text("Error").foregroundColor(.white))
-                    } else {
-                        // Placeholder while loading
-                        ProgressView()
-                            .frame(width: 100, height: 100)
+                if let imageUrl = foodItem.imageUrl {
+                    AsyncImage(url: URL(string: imageUrl)) { phase in
+                        if let image = phase.image {
+                            image
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                                .frame(width: 100, height: 100) // Smaller size for less height
+                                .cornerRadius(10)
+                                .clipped()
+                        } else if phase.error != nil {
+                            // Placeholder for error
+                            Color.red
+                                .frame(width: 100, height: 100)
+                                .cornerRadius(10)
+                                .overlay(Text("Error").foregroundColor(.white))
+                        } else {
+                            // Placeholder while loading
+                            ProgressView()
+                                .frame(width: 100, height: 100)
+                        }
                     }
+                } else {
+                    // Placeholder when no image URL exists
+                    Color.gray
+                        .frame(width: 100, height: 100)
+                        .cornerRadius(10)
+                        .overlay(Text("No Image").foregroundColor(.white))
                 }
                 
                 // Available count in the bottom-left corner of the image

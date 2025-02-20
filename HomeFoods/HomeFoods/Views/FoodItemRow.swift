@@ -17,7 +17,7 @@ struct FoodItemRow: View {
             VStack(alignment: .leading, spacing: 8) {
                 Text(foodItem.name)
                     .font(.headline)
-                Text(foodItem.description)
+                Text(foodItem.description ?? "")
                     .font(.subheadline)
                     .foregroundColor(.gray)
                     .lineLimit(2)
@@ -28,26 +28,33 @@ struct FoodItemRow: View {
             Spacer()
             
             ZStack {
-                // Food item image (AsyncImage for URL-based loading)
-                AsyncImage(url: URL(string: foodItem.imageUrl)) { phase in
-                    if let image = phase.image {
-                        image
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                            .frame(width: 150, height: 150)
-                            .cornerRadius(10)
-                            .clipped()
-                    } else if phase.error != nil {
-                        // Placeholder for error
-                        Color.red
-                            .frame(width: 150, height: 150)
-                            .cornerRadius(10)
-                            .overlay(Text("Error").foregroundColor(.white))
-                    } else {
-                        // Placeholder while loading
-                        ProgressView()
-                            .frame(width: 150, height: 150)
+                if let imageUrl = foodItem.imageUrl {
+                    AsyncImage(url: URL(string: imageUrl)) { phase in
+                        if let image = phase.image {
+                            image
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                                .frame(width: 150, height: 150)
+                                .cornerRadius(10)
+                                .clipped()
+                        } else if phase.error != nil {
+                            // Placeholder for error
+                            Color.red
+                                .frame(width: 150, height: 150)
+                                .cornerRadius(10)
+                                .overlay(Text("Error").foregroundColor(.white))
+                        } else {
+                            // Placeholder while loading
+                            ProgressView()
+                                .frame(width: 150, height: 150)
+                        }
                     }
+                } else {
+                    // Placeholder when no image URL exists
+                    Color.gray
+                        .frame(width: 150, height: 150)
+                        .cornerRadius(10)
+                        .overlay(Text("No Image").foregroundColor(.white))
                 }
                 
                 // White circle with a green plus sign

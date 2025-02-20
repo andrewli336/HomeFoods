@@ -91,17 +91,23 @@ struct OrderItemRow: View {
 
     var body: some View {
         HStack {
-            AsyncImage(url: URL(string: item.imageUrl)) { phase in
-                if let image = phase.image {
-                    image.resizable()
-                        .scaledToFill()
-                        .frame(width: 50, height: 50)
-                        .clipShape(RoundedRectangle(cornerRadius: 10))
-                } else {
-                    Color.gray
-                        .frame(width: 50, height: 50)
-                        .clipShape(RoundedRectangle(cornerRadius: 10))
+            if let imageUrl = item.imageUrl {
+                AsyncImage(url: URL(string: imageUrl)) { phase in
+                    if let image = phase.image {
+                        image.resizable()
+                            .scaledToFill()
+                            .frame(width: 50, height: 50)
+                            .clipShape(RoundedRectangle(cornerRadius: 10))
+                    } else {
+                        Color.gray
+                            .frame(width: 50, height: 50)
+                            .clipShape(RoundedRectangle(cornerRadius: 10))
+                    }
                 }
+            } else {
+                Color.gray
+                    .frame(width: 50, height: 50)
+                    .clipShape(RoundedRectangle(cornerRadius: 10))
             }
 
             VStack(alignment: .leading) {

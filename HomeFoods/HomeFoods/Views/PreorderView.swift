@@ -115,13 +115,19 @@ struct PreorderFoodItemView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 12) {
-                AsyncImage(url: URL(string: foodItem.imageUrl)) { image in
-                    image
-                        .resizable()
-                        .scaledToFill()
-                        .frame(width: 80, height: 80)
-                        .clipShape(RoundedRectangle(cornerRadius: 10))
-                } placeholder: {
+                if let imageUrl = foodItem.imageUrl {
+                    AsyncImage(url: URL(string: imageUrl)) { image in
+                        image
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: 80, height: 80)
+                            .clipShape(RoundedRectangle(cornerRadius: 10))
+                    } placeholder: {
+                        Color.gray.opacity(0.2)
+                            .frame(width: 80, height: 80)
+                            .clipShape(RoundedRectangle(cornerRadius: 10))
+                    }
+                } else {
                     Color.gray.opacity(0.2)
                         .frame(width: 80, height: 80)
                         .clipShape(RoundedRectangle(cornerRadius: 10))
@@ -130,7 +136,7 @@ struct PreorderFoodItemView: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(foodItem.name)
                         .font(.headline)
-                    Text(foodItem.description)
+                    Text(foodItem.description ?? "")
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                         .lineLimit(2)

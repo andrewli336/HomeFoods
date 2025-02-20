@@ -11,8 +11,8 @@ struct ChefMenuView: View {
     @EnvironmentObject var appViewModel: AppViewModel
     @State private var kitchen: Kitchen? // Store the kitchen data
     @State private var isLoading = true
-    @State private var showAddFoodItemSheet = false
-    @State private var selectedFoodItem: FoodItem? // Track selected item for editing
+    @State private var isShowingFoodItemSheet = false
+    @State private var selectedFoodItem: FoodItem? = nil
 
     var body: some View {
         NavigationView {
@@ -33,12 +33,16 @@ struct ChefMenuView: View {
                             ForEach(kitchen.foodItems) { item in
                                 ChefFoodItemRow(foodItem: item, onEdit: { selectedItem in
                                     selectedFoodItem = selectedItem
+                                    isShowingFoodItemSheet = true  // Add this line
                                 }, onDelete: { itemId in
                                     deleteFoodItem(itemId: itemId)
                                 })
                             }
                             
-                            Button(action: { showAddFoodItemSheet = true }) {
+                            Button(action: {
+                                selectedFoodItem = nil  // Clear any selected item
+                                isShowingFoodItemSheet = true
+                            }) {
                                 HStack {
                                     Image(systemName: "plus.circle.fill")
                                     Text("Add New Food Item")
@@ -64,9 +68,14 @@ struct ChefMenuView: View {
             .onAppear {
                 fetchChefKitchen()
             }
-            .sheet(isPresented: $showAddFoodItemSheet) {
-                EditFoodItemView(kitchenId: kitchen?.id ?? "", foodItem: selectedFoodItem) {
-                    fetchChefKitchen() // Refresh data after editing/adding
+            .sheet(isPresented: $isShowingFoodItemSheet, onDismiss: {
+                selectedFoodItem = nil  // Clear the selected item when sheet is dismissed
+            }) {
+                if let kitchen = kitchen {
+                    EditFoodItemView(kitchen: kitchen, foodItem: selectedFoodItem) {
+                        fetchChefKitchen()
+                        isShowingFoodItemSheet = false
+                    }
                 }
             }
         }

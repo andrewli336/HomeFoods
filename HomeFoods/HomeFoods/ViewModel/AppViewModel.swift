@@ -5,6 +5,10 @@
 //  Created by Andrew Li on 1/22/25.
 //
 
+extension CodingUserInfoKey {
+    static let documentRefKey = CodingUserInfoKey(rawValue: "DocumentRefUserInfoKey")!
+}
+
 import SwiftUI
 import FirebaseAuth
 import FirebaseFirestore
@@ -230,64 +234,6 @@ class AppViewModel: ObservableObject {
                 self.kitchens = fetchedKitchens
                 completion()
             }
-        }
-    }
-    
-    func fetchFoodItems(for kitchenId: String, completion: @escaping ([FoodItem]) -> Void) {
-        let foodItemsRef = db.collection("kitchens").document(kitchenId).collection("foodItems")
-
-        foodItemsRef.getDocuments { snapshot, error in
-            if let error = error {
-                print("❌ Failed to fetch food items for kitchen \(kitchenId): \(error.localizedDescription)")
-                completion([]) // ✅ Return empty list if error
-                return
-            }
-
-            guard let documents = snapshot?.documents else {
-                print("❌ No food items found for kitchen \(kitchenId)")
-                completion([])
-                return
-            }
-
-            let foodItems: [FoodItem] = documents.compactMap { doc in
-                let data = doc.data()
-
-                guard
-                    let id = doc.documentID as String?,
-                    let name = data["name"] as? String,
-                    let kitchenName = data["kitchenName"] as? String,
-                    let kitchenId = data["kitchenId"] as? String,
-                    let description = data["description"] as? String,
-                    let foodType = data["foodType"] as? String,
-                    let rating = data["rating"] as? Double,
-                    let numRatings = data["numRatings"] as? Int,
-                    let cost = data["cost"] as? Double,
-                    let imageUrl = data["imageUrl"] as? String,
-                    let isFeatured = data["isFeatured"] as? Bool,
-                    let numAvailable = data["numAvailable"] as? Int
-                else {
-                    print("❌ Failed to parse food item for kitchen \(kitchenId)")
-                    return nil
-                }
-
-                return FoodItem(
-                    id: id,
-                    name: name,
-                    kitchenName: kitchenName,
-                    kitchenId: kitchenId,
-                    description: description,
-                    foodType: foodType,
-                    rating: rating,
-                    numRatings: numRatings,
-                    cost: cost,
-                    imageUrl: imageUrl,
-                    isFeatured: isFeatured,
-                    numAvailable: numAvailable
-                )
-            }
-
-            print("✅ Loaded \(foodItems.count) food items for kitchen \(kitchenId)")
-            completion(foodItems)
         }
     }
 
@@ -661,38 +607,92 @@ class AppViewModel: ObservableObject {
             }
         }
     }
-
-    // 📌 Add a Food Item
-    func addFoodItem(kitchenId: String, foodItem: FoodItem) {
+    
+    func fetchFoodItems(for kitchenId: String, completion: @escaping ([FoodItem]) -> Void) {
         let foodItemsRef = db.collection("kitchens").document(kitchenId).collection("foodItems")
 
-        var newFoodItem = foodItem
-        let document = foodItemsRef.document() // ✅ Generates a new Firestore document
-        newFoodItem.id = document.documentID // ✅ Assigns the Firestore-generated ID
+        foodItemsRef.getDocuments { snapshot, error in
+            if let error = error {
+                print("❌ Failed to fetch food items for kitchen \(kitchenId): \(error.localizedDescription)")
+                completion([])
+                return
+            }
 
-        do {
-            let foodItemData = try Firestore.Encoder().encode(newFoodItem)
-            document.setData(foodItemData) { error in
-                if let error = error {
-                    print("❌ Failed to add food item: \(error.localizedDescription)")
-                } else {
-                    print("✅ Food item added successfully!")
+            guard let documents = snapshot?.documents else {
+                print("❌ No food items found for kitchen \(kitchenId)")
+                completion([])
+                return
+            }
+
+            let foodItems: [FoodItem] = documents.compactMap { doc in
+                do {
+                    var data = doc.data()
+                    data["id"] = doc.documentID  // Add the ID directly to the data
+                    
+                    let decoder = Firestore.Decoder()
+                    // Use the exact key string Firestore expects
+                    if let key = CodingUserInfoKey(rawValue: "DocumentRefUserInfoKey") {
+                        decoder.userInfo[key] = doc.reference
+                    }
+                    
+                    return try decoder.decode(FoodItem.self, from: data)
+                } catch {
+                    print("❌ Error decoding food item: \(error)")
+                    print("Document data: \(doc.data())")  // Added debug print
+                    return nil
                 }
             }
-        } catch {
-            print("❌ Error encoding food item: \(error.localizedDescription)")
+
+            print("✅ Loaded \(foodItems.count) food items for kitchen \(kitchenId)")
+            completion(foodItems)
         }
     }
 
-    // 📌 Update a Food Item
+    func addFoodItem(kitchenId: String, foodItem: FoodItem) {
+        let foodItemsRef = db.collection("kitchens").document(kitchenId).collection("foodItems")
+        
+        // Create a new document reference first
+        let document = foodItemsRef.document()
+        let documentId = document.documentID
+        
+        // Create a dictionary explicitly including the id
+        var foodItemData: [String: Any] = [
+            "id": documentId,
+            "name": foodItem.name,
+            "kitchenName": foodItem.kitchenName,
+            "kitchenId": foodItem.kitchenId,
+            "description": foodItem.description,
+            "foodType": foodItem.foodType,
+            "rating": foodItem.rating,
+            "numRatings": foodItem.numRatings,
+            "cost": foodItem.cost,
+            "isFeatured": foodItem.isFeatured,
+            "numAvailable": foodItem.numAvailable
+        ]
+        
+        // Add imageUrl if it exists
+        if let imageUrl = foodItem.imageUrl {
+            foodItemData["imageUrl"] = imageUrl
+        }
+        
+        // Set the data
+        document.setData(foodItemData) { error in
+            if let error = error {
+                print("❌ Failed to add food item: \(error.localizedDescription)")
+            } else {
+                print("✅ Food item added successfully!")
+            }
+        }
+    }
+
     func updateFoodItem(kitchenId: String, foodItem: FoodItem) {
         guard let foodItemId = foodItem.id else {
             print("❌ Error: Cannot update food item without an ID.")
             return
         }
-
+        
         let foodItemRef = db.collection("kitchens").document(kitchenId).collection("foodItems").document(foodItemId)
-
+        
         do {
             let foodItemData = try Firestore.Encoder().encode(foodItem)
             foodItemRef.setData(foodItemData, merge: true) { error in
