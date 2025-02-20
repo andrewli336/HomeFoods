@@ -1,16 +1,17 @@
 //
-//  FoodItemRow.swift
+//  PreorderFoodItemRow.swift
 //  HomeFoods
 //
-//  Created by Andrew Li on 12/23/24.
+//  Created by Andrew Li on 2/19/25.
 //
+
 import SwiftUI
 
-
-struct FoodItemRow: View {
+struct PreorderFoodItemRow: View {
     let foodItem: FoodItem
-    @State private var showSheet = false // State to control sheet presentation
-
+    let availableTimes: [String]
+    @State private var showSheet = false
+    
     var body: some View {
         HStack(spacing: 15) {
             // Food item details
@@ -24,9 +25,26 @@ struct FoodItemRow: View {
                 Text("$\(foodItem.cost, specifier: "%.2f") • \(Image(systemName: "hand.thumbsup")) \(Int(foodItem.rating))% (\(foodItem.numRatings))")
                     .font(.subheadline)
                     .foregroundStyle(.gray)
+                
+                // Available times chips
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        ForEach(availableTimes, id: \.self) { time in
+                            Text(time)
+                                .font(.caption)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
+                                .background(Color.blue.opacity(0.1))
+                                .foregroundColor(.blue)
+                                .clipShape(Capsule())
+                        }
+                    }
+                }
             }
+            
             Spacer()
             
+            // Image section with plus button
             ZStack {
                 if let imageUrl = foodItem.imageUrl {
                     AsyncImage(url: URL(string: imageUrl)) { phase in
@@ -38,26 +56,23 @@ struct FoodItemRow: View {
                                 .cornerRadius(10)
                                 .clipped()
                         } else if phase.error != nil {
-                            // Placeholder for error
                             Color.red
                                 .frame(width: 150, height: 150)
                                 .cornerRadius(10)
                                 .overlay(Text("Error").foregroundColor(.white))
                         } else {
-                            // Placeholder while loading
                             ProgressView()
                                 .frame(width: 150, height: 150)
                         }
                     }
                 } else {
-                    // Placeholder when no image URL exists
                     Color.gray
                         .frame(width: 150, height: 150)
                         .cornerRadius(10)
                         .overlay(Text("No Image").foregroundColor(.white))
                 }
                 
-                // White circle with a green plus sign
+                // Plus button
                 VStack {
                     Spacer()
                     HStack {
@@ -83,11 +98,11 @@ struct FoodItemRow: View {
                 .shadow(color: Color.black.opacity(0.1), radius: 3, x: 0, y: 2)
         )
         .onTapGesture {
-            showSheet = true // Show the sheet when tapped
+            showSheet = true
         }
         .sheet(isPresented: $showSheet) {
-            FoodItemSheet(foodItem: foodItem, isPresented: $showSheet)
-                .presentationDetents([.large]) // Open the sheet fully by default
+            PreorderFoodItemSheet(foodItem: foodItem, availableTimes: availableTimes, isPresented: $showSheet)
+                .presentationDetents([.large])
         }
     }
 }

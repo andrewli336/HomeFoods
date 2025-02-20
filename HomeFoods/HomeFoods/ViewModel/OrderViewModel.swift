@@ -46,8 +46,13 @@ class OrderViewModel: ObservableObject {
         return cartOrder?.orderedFoodItems.isEmpty ?? true
     }
 
-    // ✅ Add item to cart
-    func addToCart(foodItem: FoodItem, quantity: Int, specialInstructions: String?) {
+    func addToCart(
+        foodItem: FoodItem,
+        quantity: Int,
+        specialInstructions: String?,
+        orderType: OrderType = .grabAndGo,
+        pickupTime: String? = nil
+    ) {
         guard let foodItemId = foodItem.id else {
             print("❌ Error: Food item does not have a valid ID")
             return
@@ -59,39 +64,45 @@ class OrderViewModel: ObservableObject {
             quantity: quantity,
             price: foodItem.cost,
             imageUrl: foodItem.imageUrl,
-            specialInstructions: specialInstructions
+            specialInstructions: specialInstructions,
+            pickupTime: pickupTime // Include pickup time in the ordered item
         )
 
         DispatchQueue.main.async {
             if let existingOrder = self.cartOrder {
-                // ✅ If new item is from a different kitchen, reset cart
+                // Check if new item is from a different kitchen
                 if existingOrder.kitchenId != foodItem.kitchenId {
                     print("🛒 New item from a different kitchen, clearing cart...")
                     self.cartOrder = Order(
-                        id: UUID().uuidString, // Temporary ID
-                        userId: "", // Set when user logs in
+                        id: UUID().uuidString,
+                        userId: "",
                         kitchenId: foodItem.kitchenId,
                         kitchenName: foodItem.kitchenName,
                         datePlaced: Date(),
                         datePickedUp: nil,
                         orderedFoodItems: [newOrderedItem],
-                        orderType: .grabAndGo
+                        orderType: orderType // Use the provided order type
                     )
+                } else if existingOrder.orderType != orderType {
+                    // If trying to add a different order type to cart
+                    print("❌ Cannot mix different order types in the same cart")
+                    // You might want to handle this case differently, like showing an alert
+                    return
                 } else {
-                    // ✅ Add to the existing order
+                    // Add to the existing order
                     self.cartOrder?.orderedFoodItems.append(newOrderedItem)
                 }
             } else {
-                // ✅ If no existing order, create a new one
+                // If no existing order, create a new one
                 self.cartOrder = Order(
-                    id: UUID().uuidString, // Temporary ID
-                    userId: "", // Set when user logs in
+                    id: UUID().uuidString,
+                    userId: "",
                     kitchenId: foodItem.kitchenId,
                     kitchenName: foodItem.kitchenName,
                     datePlaced: Date(),
                     datePickedUp: nil,
                     orderedFoodItems: [newOrderedItem],
-                    orderType: .grabAndGo
+                    orderType: orderType // Use the provided order type
                 )
             }
 
@@ -178,26 +189,51 @@ class OrderViewModel: ObservableObject {
                 let orders: [Order] = snapshot?.documents.compactMap { doc in
                     let data = doc.data()
                     
-                    // ✅ Extract order fields
+                    // Extract order fields
                     let id = doc.documentID
                     let kitchenId = data["kitchenId"] as? String ?? "Unknown"
                     let kitchenName = data["kitchenName"] as? String ?? "Unknown"
-                    let orderType = data["orderType"] as? String ?? "Unknown"
                     let userId = data["userId"] as? String ?? "Unknown"
                     let datePlaced = (data["datePlaced"] as? Timestamp)?.dateValue() ?? Date()
-                    let datePickedUp = (data["datePickedUp"] as? Timestamp)?.dateValue() // ✅ Optional
+                    let datePickedUp = (data["datePickedUp"] as? Timestamp)?.dateValue()
+                    
+                    // Parse order type
+                    let orderTypeString = data["orderType"] as? String ?? "grabAndGo"
+                    let orderType: OrderType = {
+                        switch orderTypeString {
+                        case "preorder":
+                            return .preorder
+                        case "request":
+                            return .request
+                        default:
+                            return .grabAndGo
+                        }
+                    }()
 
-                    // ✅ Extract ordered food items
+                    // Extract ordered food items with pickup time
                     let orderedFoodItemsData = data["orderedFoodItems"] as? [[String: Any]] ?? []
                     let orderedFoodItems: [OrderedFoodItem] = orderedFoodItemsData.compactMap { itemData in
                         guard let id = itemData["id"] as? String,
                               let name = itemData["name"] as? String,
                               let price = itemData["price"] as? Double,
-                              let quantity = itemData["quantity"] as? Int,
-                              let imageUrl = itemData["imageUrl"] as? String else {
+                              let quantity = itemData["quantity"] as? Int
+                        else {
                             return nil
                         }
-                        return OrderedFoodItem(id: id, name: name, quantity: quantity, price: price, imageUrl: imageUrl)
+                        
+                        let imageUrl = itemData["imageUrl"] as? String
+                        let specialInstructions = itemData["specialInstructions"] as? String
+                        let pickupTime = itemData["pickupTime"] as? String
+                        
+                        return OrderedFoodItem(
+                            id: id,
+                            name: name,
+                            quantity: quantity,
+                            price: price,
+                            imageUrl: imageUrl,
+                            specialInstructions: specialInstructions,
+                            pickupTime: pickupTime
+                        )
                     }
 
                     return Order(
@@ -205,10 +241,10 @@ class OrderViewModel: ObservableObject {
                         userId: userId,
                         kitchenId: kitchenId,
                         kitchenName: kitchenName,
-                        datePlaced: datePlaced, // ✅ Corrected
-                        datePickedUp: datePickedUp, // ✅ Optional pickup date
-                        orderedFoodItems: orderedFoodItems, // ✅ Correctly assigned
-                        orderType: .preorder // ✅ Corrected
+                        datePlaced: datePlaced,
+                        datePickedUp: datePickedUp,
+                        orderedFoodItems: orderedFoodItems,
+                        orderType: orderType
                     )
                 } ?? []
 

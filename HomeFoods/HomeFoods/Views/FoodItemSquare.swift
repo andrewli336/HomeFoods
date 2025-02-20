@@ -8,7 +8,7 @@ import SwiftUI
 
 struct FoodItemSquare: View {
     let foodItem: FoodItem
-    @State private var showSheet = false // State to control sheet presentation
+//    @State private var showSheet = false // State to control sheet presentation
 
     var body: some View {
         VStack(spacing: 15) {
@@ -53,9 +53,6 @@ struct FoodItemSquare: View {
                             Circle()
                                 .fill(Color.white) // White circle background
                                 .frame(width: 25, height: 25) // Circle size
-                            Image(systemName: "plus")
-                                .font(.system(size: 10, weight: .semibold))
-                                .foregroundColor(.black) // Green plus sign
                         }
                         .offset(x: -10, y: -10) // Adjust position slightly to align with bottom-right corner
                     }
@@ -76,12 +73,12 @@ struct FoodItemSquare: View {
         }
         .frame(width: 150, height: 188) // Adjust height to fit content
         .padding()
-        .onTapGesture {
-            showSheet = true // Show the sheet when tapped
-        }
-        .sheet(isPresented: $showSheet) {
-            FoodItemSheet(foodItem: foodItem, isPresented: $showSheet) // Pass only required parameters
-                .presentationDetents([.large]) // Open the sheet fully by default
-        }
+//        .onTapGesture {
+//            showSheet = true // Show the sheet when tapped
+//        }
+//        .sheet(isPresented: $showSheet) {
+//            FoodItemSheet(foodItem: foodItem, isPresented: $showSheet) // Pass only required parameters
+//                .presentationDetents([.large]) // Open the sheet fully by default
+//        }
     }
 }

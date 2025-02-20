@@ -60,7 +60,7 @@ struct PreorderView: View {
                     VStack(spacing: 16) {
                         ForEach(availableFoodItems, id: \.foodItemId) { preorderFood in
                             if let foodItem = getFoodItem(id: preorderFood.foodItemId) {
-                                PreorderFoodItemView(
+                                PreorderFoodItemRow(
                                     foodItem: foodItem,
                                     availableTimes: preorderFood.availableTimes
                                 )

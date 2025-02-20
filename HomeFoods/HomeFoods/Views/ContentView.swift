@@ -136,8 +136,7 @@ struct ContentView: View {
                 }
             }
             
-            // Persistent CartBar (only for user mode)
-            if !orderViewModel.isCartEmpty() && !appViewModel.isChefMode {
+            if !appViewModel.isAdminMode && !appViewModel.isChefMode {
                 CartBar()
             }
         }

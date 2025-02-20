@@ -18,7 +18,7 @@ struct CartSheet: View {
         NavigationView {
             if showConfirmation {
                 OrderConfirmationView(showCartSheet: $showCartSheet)
-                    .onDisappear {
+                    .onDisappear() { // Change from onDisappear to onAppear
                         orderViewModel.resetCart()
                     }
             } else {
@@ -65,7 +65,6 @@ struct CartSheet: View {
             DispatchQueue.main.async {
                 isPlacingOrder = false
                 if success {
-                    orderViewModel.clearCart() // ✅ Clear cart after successful order
                     showConfirmation = true
                 } else {
                     print("❌ Failed to place order")
@@ -96,89 +95,162 @@ struct CartOrderListView: View {
     }
 }
 
-// ✅ Extracted Order Item Row
 struct CartOrderItemView: View {
     let foodItem: OrderedFoodItem
     @EnvironmentObject var orderViewModel: OrderViewModel
 
     var body: some View {
-        HStack {
-            if let imageUrl = foodItem.imageUrl {
-                AsyncImage(url: URL(string: imageUrl)) { phase in
-                    if let image = phase.image {
-                        image
-                            .resizable()
-                            .frame(width: 50, height: 50)
-                            .cornerRadius(8)
-                    } else {
-                        Color.gray.opacity(0.3)
-                            .frame(width: 50, height: 50)
-                            .cornerRadius(8)
-                            .overlay(Text("N/A").foregroundColor(.white))
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                if let imageUrl = foodItem.imageUrl {
+                    AsyncImage(url: URL(string: imageUrl)) { phase in
+                        if let image = phase.image {
+                            image
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                                .frame(width: 60, height: 60)
+                                .cornerRadius(8)
+                        } else {
+                            Color.gray.opacity(0.3)
+                                .frame(width: 60, height: 60)
+                                .cornerRadius(8)
+                                .overlay(Text("N/A").foregroundColor(.white))
+                        }
+                    }
+                } else {
+                    Color.gray.opacity(0.3)
+                        .frame(width: 60, height: 60)
+                        .cornerRadius(8)
+                        .overlay(Text("N/A").foregroundColor(.white))
+                }
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(foodItem.name)
+                        .font(.headline)
+                    
+                    HStack {
+                        Text("$\(foodItem.price, specifier: "%.2f") × \(foodItem.quantity)")
+                            .font(.subheadline)
+                            .foregroundColor(.gray)
+                        
+                        Text("= $\(foodItem.price * Double(foodItem.quantity), specifier: "%.2f")")
+                            .font(.subheadline)
+                            .foregroundColor(.blue)
+                    }
+
+                    if let pickupTime = foodItem.pickupTime {
+                        HStack {
+                            Image(systemName: "clock")
+                                .foregroundColor(.orange)
+                            Text("Pickup at \(pickupTime)")
+                                .font(.caption)
+                                .foregroundColor(.orange)
+                        }
                     }
                 }
-            } else {
-                Color.gray.opacity(0.3)
-                    .frame(width: 50, height: 50)
-                    .cornerRadius(8)
-                    .overlay(Text("N/A").foregroundColor(.white))
+                
+                Spacer()
+
+                Button(action: {
+                    orderViewModel.removeFromCart(foodItemId: foodItem.id)
+                }) {
+                    Image(systemName: "trash")
+                        .foregroundColor(.red)
+                        .padding(8)
+                        .background(Color.red.opacity(0.1))
+                        .cornerRadius(8)
+                }
             }
 
-            VStack(alignment: .leading, spacing: 5) {
-                Text(foodItem.name)
-                    .font(.headline)
-                Text("$\(foodItem.price, specifier: "%.2f") x \(foodItem.quantity)")
-                    .font(.subheadline)
-                    .foregroundColor(.gray)
-
-                if let instructions = foodItem.specialInstructions, !instructions.isEmpty {
-                    Text("Special: \(instructions)")
+            if let instructions = foodItem.specialInstructions, !instructions.isEmpty {
+                HStack {
+                    Image(systemName: "note.text")
+                        .foregroundColor(.blue)
+                    Text(instructions)
                         .font(.caption)
                         .foregroundColor(.blue)
                 }
+                .padding(.vertical, 4)
+                .padding(.horizontal, 8)
+                .background(Color.blue.opacity(0.1))
+                .cornerRadius(6)
             }
-            Spacer()
-
-            Button(action: {
-                orderViewModel.removeFromCart(foodItemId: foodItem.id)
-            }) {
-                Image(systemName: "trash")
-                    .foregroundColor(.red)
-            }
+            
+            Divider()
         }
         .padding(.horizontal)
+        .padding(.vertical, 8)
     }
 }
 
-// ✅ Extracted Checkout View
 struct CartCheckoutView: View {
     let totalCost: Double
     @Binding var isPlacingOrder: Bool
     let placeOrder: () -> Void
+    @EnvironmentObject var orderViewModel: OrderViewModel
 
     var body: some View {
-        VStack {
-            Divider()
-            HStack {
-                Text("Total")
-                    .font(.title3)
-                Spacer()
-                Text("$\(totalCost, specifier: "%.2f")")
-                    .font(.title3)
-                    .bold()
+        VStack(spacing: 16) {
+            // Order Type Section
+            if let order = orderViewModel.cartOrder {
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack {
+                        Image(systemName: orderTypeIcon)
+                            .foregroundColor(orderTypeColor)
+                        Text(orderTypeTitle)
+                            .font(.headline)
+                            .foregroundColor(orderTypeColor)
+                    }
+                    .padding(.horizontal)
+                    
+                    if order.orderType == .preorder {
+                        Text("Multiple pickup times selected")
+                            .font(.subheadline)
+                            .foregroundColor(.gray)
+                            .padding(.horizontal)
+                    }
+                }
+                .padding(.vertical, 12)
             }
-            .padding(.horizontal)
 
+            // Cost Breakdown
+            VStack(spacing: 12) {
+                Divider()
+                
+                HStack {
+                    Text("Subtotal")
+                        .foregroundColor(.gray)
+                    Spacer()
+                    Text("$\(totalCost, specifier: "%.2f")")
+                        .foregroundColor(.gray)
+                }
+                .padding(.horizontal)
+
+                HStack {
+                    Text("Total")
+                        .font(.title3)
+                        .bold()
+                    Spacer()
+                    Text("$\(totalCost, specifier: "%.2f")")
+                        .font(.title3)
+                        .bold()
+                }
+                .padding(.horizontal)
+            }
+
+            // Place Order Button
             Button(action: placeOrder) {
                 HStack {
                     if isPlacingOrder {
                         ProgressView()
+                            .tint(.white)
                     }
-                    Text("Place Order")
+                    Text(isPlacingOrder ? "Placing Order..." : "Place Order")
+                        .font(.headline)
                 }
                 .frame(maxWidth: .infinity)
                 .padding()
-                .background(Color.red)
+                .background(isPlacingOrder ? Color.gray : Color.red)
                 .foregroundColor(.white)
                 .cornerRadius(10)
                 .padding(.horizontal)
@@ -186,5 +258,43 @@ struct CartCheckoutView: View {
             .disabled(isPlacingOrder)
         }
         .padding(.bottom, 10)
+        .background(Color.white)
+        .shadow(color: .black.opacity(0.05), radius: 5, y: -5)
+    }
+    
+    private var orderTypeIcon: String {
+        guard let orderType = orderViewModel.cartOrder?.orderType else { return "cart" }
+        switch orderType {
+        case .grabAndGo:
+            return "bag.fill"
+        case .preorder:
+            return "clock.fill"
+        case .request:
+            return "bell.fill"
+        }
+    }
+    
+    private var orderTypeColor: Color {
+        guard let orderType = orderViewModel.cartOrder?.orderType else { return .gray }
+        switch orderType {
+        case .grabAndGo:
+            return .green
+        case .preorder:
+            return .orange
+        case .request:
+            return .blue
+        }
+    }
+    
+    private var orderTypeTitle: String {
+        guard let orderType = orderViewModel.cartOrder?.orderType else { return "Cart" }
+        switch orderType {
+        case .grabAndGo:
+            return "Grab & Go Order"
+        case .preorder:
+            return "Preorder"
+        case .request:
+            return "Special Request"
+        }
     }
 }

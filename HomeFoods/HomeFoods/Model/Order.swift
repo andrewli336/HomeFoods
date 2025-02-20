@@ -8,26 +8,49 @@
 import SwiftUI
 import FirebaseFirestore
 
-struct Order: Identifiable, Codable {
-    @DocumentID var id: String? // Firestore document ID
-    let userId: String // ID of the user who placed the order
-    let kitchenId: String // Kitchen the order belongs to
-    let kitchenName: String
-    let datePlaced: Date // Date when the order was placed
-    var datePickedUp: Date? // Optional, if not yet picked up
-    var orderedFoodItems: [OrderedFoodItem] // Simplify FoodItem to OrderedFoodItem for order storage
-    let orderType: OrderType
-    var totalCost: Double {
-        orderedFoodItems.reduce(0) { $0 + ($1.price * Double($1.quantity)) }
+struct OrderedFoodItem: Identifiable, Codable, Equatable {
+    let id: String
+    let name: String
+    let quantity: Int
+    let price: Double
+    let imageUrl: String?
+    let specialInstructions: String?
+    let pickupTime: String?
+    
+    static func == (lhs: OrderedFoodItem, rhs: OrderedFoodItem) -> Bool {
+        lhs.id == rhs.id &&
+        lhs.name == rhs.name &&
+        lhs.quantity == rhs.quantity &&
+        lhs.price == rhs.price &&
+        lhs.imageUrl == rhs.imageUrl &&
+        lhs.specialInstructions == rhs.specialInstructions &&
+        lhs.pickupTime == rhs.pickupTime
     }
 }
 
-struct OrderedFoodItem: Identifiable, Codable {
-    let id: String // Food item ID
-    let name: String
-    var quantity: Int
-    let price: Double
-    let imageUrl: String?
-    var specialInstructions: String? = nil // Optional instructions
+struct Order: Identifiable, Codable, Equatable {
+    @DocumentID var id: String?
+    let userId: String
+    let kitchenId: String
+    let kitchenName: String
+    let datePlaced: Date
+    var datePickedUp: Date?
+    var orderedFoodItems: [OrderedFoodItem]
+    let orderType: OrderType
+    
+    var totalCost: Double {
+        orderedFoodItems.reduce(0) { $0 + ($1.price * Double($1.quantity)) }
+    }
+    
+    static func == (lhs: Order, rhs: Order) -> Bool {
+        lhs.id == rhs.id &&
+        lhs.userId == rhs.userId &&
+        lhs.kitchenId == rhs.kitchenId &&
+        lhs.kitchenName == rhs.kitchenName &&
+        lhs.datePlaced == rhs.datePlaced &&
+        lhs.datePickedUp == rhs.datePickedUp &&
+        lhs.orderedFoodItems == rhs.orderedFoodItems &&
+        lhs.orderType == rhs.orderType
+    }
 }
 
