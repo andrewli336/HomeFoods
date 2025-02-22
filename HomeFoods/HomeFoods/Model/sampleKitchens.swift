@@ -148,7 +148,7 @@ func uploadSampleKitchensToFirestore() {
         let kitchenId = kitchenRef.documentID // Extract the generated ID
 
         // ✅ Create a structured Firestore document
-        let newKitchen = [
+        let newKitchen: [String: Any] = [
             "name": kitchen.name,
             "description": kitchen.description,
             "cuisine": kitchen.cuisine,
@@ -158,9 +158,9 @@ func uploadSampleKitchensToFirestore() {
                 "longitude": kitchen.location.longitude
             ],
             "imageUrl": kitchen.imageUrl ?? "",
-            "preorderSchedule": kitchen.preorderSchedule as Any,
-            "address": kitchen.address
-        ] as [String : Any]
+            "preorderSchedule": kitchen.preorderSchedule ?? [],
+            "address": kitchen.address ?? ""
+        ]
 
         // ✅ Upload the kitchen WITHOUT foodItems (since they go in a subcollection)
         kitchenRef.setData(newKitchen) { error in
@@ -175,20 +175,20 @@ func uploadSampleKitchensToFirestore() {
             for foodItem in kitchen.foodItems {
                 let foodItemRef = kitchenRef.collection("foodItems").document()
 
-                let newFoodItem = [
-                    "id": foodItemRef.documentID, // ✅ Firestore-generated ID
+                let newFoodItem: [String: Any] = [
+                    "id": foodItemRef.documentID,
                     "name": foodItem.name,
-                    "kitchenId": kitchenId, // ✅ Assign the correct kitchenId
+                    "kitchenId": kitchenId,
                     "kitchenName": kitchen.name,
-                    "description": foodItem.description,
+                    "description": foodItem.description ?? "",  // Handle optional
                     "foodType": foodItem.foodType,
                     "rating": foodItem.rating,
                     "numRatings": foodItem.numRatings,
                     "cost": foodItem.cost,
-                    "imageUrl": foodItem.imageUrl,
+                    "imageUrl": foodItem.imageUrl ?? "",  // Handle optional
                     "isFeatured": foodItem.isFeatured,
                     "numAvailable": foodItem.numAvailable
-                ] as [String : Any]
+                ]
 
                 foodItemRef.setData(newFoodItem) { error in
                     if let error = error {

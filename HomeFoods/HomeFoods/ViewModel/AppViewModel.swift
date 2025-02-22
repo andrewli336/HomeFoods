@@ -786,4 +786,27 @@ class AppViewModel: ObservableObject {
             self.updatePreorderSchedule(kitchenId: kitchenId, schedule: updatedSchedule, completion: completion)
         }
     }
+    
+    func updateKitchenDetails(kitchenId: String, name: String, description: String, cuisine: String, address: String, imageUrl: String?, location: GeoPoint, completion: @escaping () -> Void) {
+            let db = Firestore.firestore()
+            let kitchenRef = db.collection("kitchens").document(kitchenId)
+            
+            let updates: [String: Any] = [
+                "name": name,
+                "description": description,
+                "cuisine": cuisine,
+                "address": address,
+                "imageUrl": imageUrl ?? "",
+                "location": location
+            ]
+            
+            kitchenRef.updateData(updates) { error in
+                if let error = error {
+                    print("❌ Error updating kitchen: \(error.localizedDescription)")
+                } else {
+                    print("✅ Kitchen updated successfully")
+                    completion()
+                }
+            }
+        }
 }

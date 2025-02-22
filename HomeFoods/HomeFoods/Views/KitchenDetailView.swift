@@ -69,11 +69,12 @@ struct KitchenImageView: View {
 
 struct KitchenTopPart: View {
     let kitchen: Kitchen
-    @EnvironmentObject var appViewModel: AppViewModel // ✅ Use AppViewModel to fetch account
+    @EnvironmentObject var appViewModel: AppViewModel
     @EnvironmentObject var locationManager: LocationManager
-    @State private var owner: Account? // ✅ Store owner account data
-    @State private var isLoading = true // ✅ Track loading state
+    @State private var owner: Account?
+    @State private var isLoading = true
     @State private var distanceText: String = "Calculating..."
+    @State private var showMapSheet = false // Add state for map sheet
 
     var body: some View {
         VStack(alignment: .leading, spacing: 15) {
@@ -91,16 +92,17 @@ struct KitchenTopPart: View {
                 .foregroundColor(.black.opacity(0.8))
                 .padding(.top, 5)
             
-            // ✅ Kitchen Address
-            HStack {
-                Image(systemName: "mappin.and.ellipse")
-                    .foregroundColor(.red)
-                Text(kitchen.address ?? "Address unavailable")
-                    .font(.subheadline)
-                    .foregroundColor(.gray)
+            // Make address clickable
+            Button(action: { showMapSheet = true }) {
+                HStack {
+                    Image(systemName: "mappin.and.ellipse")
+                        .foregroundColor(.red)
+                    Text(kitchen.address ?? "Address unavailable")
+                        .font(.subheadline)
+                        .foregroundColor(.gray)
+                }
             }
 
-            // ✅ Distance from User
             HStack {
                 Image(systemName: "location.circle.fill")
                     .foregroundColor(.blue)
@@ -113,10 +115,9 @@ struct KitchenTopPart: View {
             Divider()
 
             if isLoading {
-                ProgressView() // ✅ Show loading while fetching
+                ProgressView()
                     .padding()
             } else if let owner = owner {
-                // ✅ Owner Profile Section
                 NavigationLink(destination: AccountView(account: owner)) {
                     HStack {
                         AsyncImage(url: URL(string: owner.profilePictureUrl ?? "")) { phase in
@@ -164,6 +165,9 @@ struct KitchenTopPart: View {
             fetchOwnerAccount()
             calculateDistance()
         }
+        .sheet(isPresented: $showMapSheet) {
+            KitchenMapSheet(kitchen: kitchen, isPresented: $showMapSheet)
+        }
     }
     
     private func calculateDistance() {
@@ -176,14 +180,13 @@ struct KitchenTopPart: View {
         let userCLLocation = CLLocation(latitude: userLocation.latitude, longitude: userLocation.longitude)
 
         let distanceInMeters = userCLLocation.distance(from: kitchenLocation)
-        let distanceInMiles = distanceInMeters / 1609.34 // Convert to miles
+        let distanceInMiles = distanceInMeters / 1609.34
 
         DispatchQueue.main.async {
             distanceText = String(format: "%.1f miles away", distanceInMiles)
         }
     }
 
-    // 📌 Fetch owner account using AppViewModel
     private func fetchOwnerAccount() {
         guard !kitchen.ownerId.isEmpty else {
             print("❌ Error: Owner ID is empty")
