@@ -26,6 +26,7 @@ struct HomeFoodsApp: App {
     @StateObject private var appViewModel = AppViewModel()
     @StateObject private var orderViewModel = OrderViewModel()
     @StateObject private var locationManager = LocationManager()
+    @StateObject var notificationViewModel = NotificationViewModel()
     
     var body: some Scene {
         WindowGroup {
@@ -45,6 +46,7 @@ struct HomeFoodsApp: App {
                         .environmentObject(appViewModel)
                         .environmentObject(locationManager)
                         .environmentObject(orderViewModel)
+                        .environmentObject(notificationViewModel)
                 }
             } else {
                 AuthView()

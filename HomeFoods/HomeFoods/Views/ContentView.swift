@@ -11,6 +11,7 @@ import FirebaseFirestore
 struct ContentView: View {
     @EnvironmentObject var appViewModel: AppViewModel
     @EnvironmentObject var orderViewModel: OrderViewModel
+    @EnvironmentObject var notificationViewModel: NotificationViewModel
 
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -63,13 +64,8 @@ struct ContentView: View {
                     ToolbarItemGroup(placement: .navigationBarTrailing) {
                         HStack(spacing: 15) {
                             // Notification Bell
-                            Button(action: {
-                                // Handle notifications
-                                print("Notification tapped")
-                            }) {
-                                Image(systemName: "bell")
-                                    .foregroundColor(.black)
-                            }
+                            
+                            NotificationButton()
                             
                             Menu {
                                 NavigationLink(destination: ProfileView()) {
