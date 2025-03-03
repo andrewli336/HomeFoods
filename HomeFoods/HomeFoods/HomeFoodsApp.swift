@@ -9,11 +9,13 @@ import SwiftUI
 import FirebaseCore
 import FirebaseStorage
 import GoogleSignIn
+import Stripe
 
 class AppDelegate: NSObject, UIApplicationDelegate {
     func application(_ application: UIApplication,
                      didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
         FirebaseApp.configure()
+        StripeAPI.defaultPublishableKey = TestBackend.shared.getPublishableKey()
         return true
     }
     
