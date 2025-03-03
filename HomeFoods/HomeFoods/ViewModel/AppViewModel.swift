@@ -13,6 +13,7 @@ import SwiftUI
 import FirebaseAuth
 import FirebaseFirestore
 import CoreLocation
+import GoogleSignIn
 
 class AppViewModel: ObservableObject {
     @Published var isAuthenticated: Bool = false
@@ -27,6 +28,7 @@ class AppViewModel: ObservableObject {
     @Published var userLocation: CLLocationCoordinate2D?
     @Published var userAddress: String?
     @Published var kitchens: [Kitchen] = [] // ✅ Stores fetched kitchens
+    @Published var authManager = AuthManager()
     private let locationManager = LocationManager()
 
     private let auth = Auth.auth()
@@ -47,12 +49,45 @@ class AppViewModel: ObservableObject {
             if let user = user {
                 self.isAuthenticated = true
                 self.fetchCurrentUser(uid: user.uid)
+                
+                // Check if this is a new Google sign-in that needs onboarding
+                if user.providerData.contains(where: { $0.providerID == "google.com" }) {
+                    self.checkIfUserNeedsOnboarding { needsOnboarding in
+                        if needsOnboarding {
+                            self.showOnboarding = true
+                        }
+                    }
+                }
             } else {
                 self.isAuthenticated = false
                 self.currentUser = nil
             }
         }
     }
+    
+    func checkIfUserNeedsOnboarding(completion: @escaping (Bool) -> Void) {
+            guard let userId = Auth.auth().currentUser?.uid else {
+                completion(false)
+                return
+            }
+            
+            db.collection("accounts").document(userId).getDocument { snapshot, error in
+                if let document = snapshot, document.exists {
+                    do {
+                        let user = try document.data(as: Account.self)
+                        let needsOnboarding = user.favoriteCuisines == nil || user.favoriteCuisines?.isEmpty == true
+                        DispatchQueue.main.async {
+                            completion(needsOnboarding)
+                        }
+                    } catch {
+                        print("❌ Failed to decode user: \(error.localizedDescription)")
+                        completion(true) // Default to showing onboarding if there's an error
+                    }
+                } else {
+                    completion(true) // No document means new user, show onboarding
+                }
+            }
+        }
 
     deinit {
         if let handle = authStateListenerHandle {
@@ -66,65 +101,47 @@ class AppViewModel: ObservableObject {
         userAddress = locationManager.address
     }
 
-    // MARK: - Authentication
-    func login(email: String, password: String, completion: @escaping (Result<Void, Error>) -> Void) {
-        auth.signIn(withEmail: email, password: password) { [weak self] result, error in
-            if let error = error {
-                completion(.failure(error))
-            } else if let user = result?.user {
+    func signInWithGoogle() {
+        let viewController = getUIViewController()
+        
+        authManager.signInWithGoogle(presenting: viewController) { [weak self] result in
+            switch result {
+            case .success(let user):
+                print("✅ Successfully signed in with Google: \(user.displayName ?? "Unknown")")
                 self?.isAuthenticated = true
                 self?.fetchCurrentUser(uid: user.uid)
-                completion(.success(()))
-            }
-        }
-    }
-
-    func signUp(email: String, password: String, name: String, completion: @escaping (Result<Void, Error>) -> Void) {
-        auth.createUser(withEmail: email, password: password) { [weak self] result, error in
-            if let error = error {
-                completion(.failure(error))
-            } else if let user = result?.user {
-                self?.checkIfAdmin(email: email) { isAdmin in
-                    self?.createUserInFirestore(uid: user.uid, name: name, email: email, isAdmin: isAdmin)
-                    self?.isAuthenticated = true
-                    self?.fetchCurrentUser(uid: user.uid)
-                    self?.showOnboarding = true
-                    completion(.success(()))
-                }
-            }
-        }
-    }
-    
-    // ✅ Function to check if an email is in the admin list
-    private func checkIfAdmin(email: String, completion: @escaping (Bool) -> Void) {
-        let adminRef = db.collection("config").document("adminEmails")
-        
-        adminRef.getDocument { document, error in
-            if let error = error {
-                print("❌ Error fetching admin list: \(error.localizedDescription)")
-                completion(false) // Assume not an admin if there's an error
-                return
-            }
-            
-            if let data = document?.data(), let emails = data["emails"] as? [String] {
-                completion(emails.contains(email)) // ✅ Check if email is in the admin list
-            } else {
-                completion(false) // Assume not an admin if there's no data
+                
+            case .failure(let error):
+                print("❌ Failed to sign in with Google: \(error.localizedDescription)")
             }
         }
     }
 
 
     func logout() {
-        do {
-            try auth.signOut()
-            self.isAuthenticated = false
-            self.currentUser = nil
-            self.isAdminMode = false
-            self.isChefMode = false
-        } catch {
-            print("Logout failed: \(error.localizedDescription)")
+            do {
+                try authManager.signOut()
+                self.isAuthenticated = false
+                self.currentUser = nil
+                self.isAdminMode = false
+                self.isChefMode = false
+            } catch {
+                print("❌ Logout failed: \(error.localizedDescription)")
+            }
         }
+    
+    private func getUIViewController() -> UIViewController {
+        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+              let rootViewController = windowScene.windows.first?.rootViewController else {
+            return UIViewController()
+        }
+        
+        var currentController = rootViewController
+        while let presentedController = currentController.presentedViewController {
+            currentController = presentedController
+        }
+        
+        return currentController
     }
 
     // MARK: - Firestore User Management
@@ -138,6 +155,13 @@ class AppViewModel: ObservableObject {
                     DispatchQueue.main.async {
                         self?.currentUser = user
                         self?.isChefMode = user.isChef
+                        
+                        // Check if user needs onboarding after fetching
+                        self?.checkIfUserNeedsOnboarding { needsOnboarding in
+                            if needsOnboarding {
+                                self?.showOnboarding = true
+                            }
+                        }
                     }
                 } catch {
                     print("Failed to decode user: \(error.localizedDescription)")
@@ -237,28 +261,6 @@ class AppViewModel: ObservableObject {
         }
     }
 
-    // ✅ Create user in Firestore with the correct `isAdmin` value
-    private func createUserInFirestore(uid: String, name: String, email: String, isAdmin: Bool) {
-        let account = Account(
-            id: uid,
-            name: name,
-            email: email,
-            profilePictureUrl: nil,
-            accountCreationDate: Date(),
-            isChef: false,
-            wantsToBeChef: false,
-            isAdmin: isAdmin, // ✅ Set based on Firestore check
-            kitchenId: nil,
-            address: nil
-        )
-
-        do {
-            try db.collection("accounts").document(uid).setData(from: account)
-            print("✅ User created in Firestore with isAdmin: \(isAdmin)")
-        } catch {
-            print("❌ Failed to create user in Firestore: \(error.localizedDescription)")
-        }
-    }
     
     // MARK: - Save Onboarding Data
     func saveOnboardingData(favoriteCuisines: [String], howHeardAboutUs: String?, wantsToBeChef: Bool, completion: @escaping (Result<Void, Error>) -> Void) {
