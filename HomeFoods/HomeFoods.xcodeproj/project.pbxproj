@@ -7,6 +7,13 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		005ED16147B5FF396A220855 /* Pods_HomeFoods_HomeFoodsUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE823D1F94D924351E3350DD /* Pods_HomeFoods_HomeFoodsUITests.framework */; };
+		44D83FA7D289EE07409E074A /* Pods_HomeFoodsTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7D5ED37C86B14C06EEEF605F /* Pods_HomeFoodsTests.framework */; };
+		49402A522D74D88A00DFFB4C /* Stripe in Frameworks */ = {isa = PBXBuildFile; productRef = 49402A512D74D88A00DFFB4C /* Stripe */; };
+		49402A542D74D88A00DFFB4C /* StripeApplePay in Frameworks */ = {isa = PBXBuildFile; productRef = 49402A532D74D88A00DFFB4C /* StripeApplePay */; };
+		49402A562D74D88B00DFFB4C /* StripePaymentSheet in Frameworks */ = {isa = PBXBuildFile; productRef = 49402A552D74D88A00DFFB4C /* StripePaymentSheet */; };
+		49402B872D755B4A00DFFB4C /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = 49402B862D755B4A00DFFB4C /* GoogleSignIn */; };
+		49402B892D755B4A00DFFB4C /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 49402B882D755B4A00DFFB4C /* GoogleSignInSwift */; };
 		49965B6C2D336DB600D70271 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = 49965B6B2D336DB600D70271 /* FirebaseAnalytics */; };
 		49965B6E2D336DB600D70271 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 49965B6D2D336DB600D70271 /* FirebaseAuth */; };
 		49965B702D336DB600D70271 /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = 49965B6F2D336DB600D70271 /* FirebaseCrashlytics */; };
@@ -14,6 +21,7 @@
 		49965B742D336DB600D70271 /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = 49965B732D336DB600D70271 /* FirebaseMessaging */; };
 		49965B762D336DB600D70271 /* FirebasePerformance in Frameworks */ = {isa = PBXBuildFile; productRef = 49965B752D336DB600D70271 /* FirebasePerformance */; };
 		49965B782D336DB600D70271 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 49965B772D336DB600D70271 /* FirebaseStorage */; };
+		DFD56A4EFFF5C7B32DE09180 /* Pods_HomeFoods.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C4BE4A803C635C903DFD8CB0 /* Pods_HomeFoods.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -34,25 +42,27 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		02370C2AF41870E1101BC41B /* Pods-HomeFoodsTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HomeFoodsTests.release.xcconfig"; path = "Target Support Files/Pods-HomeFoodsTests/Pods-HomeFoodsTests.release.xcconfig"; sourceTree = "<group>"; };
 		49F3CDEF2D21BCCE009BF02A /* HomeFoods.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HomeFoods.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		49F3CDFF2D21BCD0009BF02A /* HomeFoodsTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HomeFoodsTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		49F3CE092D21BCD0009BF02A /* HomeFoodsUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HomeFoodsUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		51CB2031C13530CCD526130D /* Pods-HomeFoods.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HomeFoods.debug.xcconfig"; path = "Target Support Files/Pods-HomeFoods/Pods-HomeFoods.debug.xcconfig"; sourceTree = "<group>"; };
+		641AE33DFA142A2B91C1B996 /* Pods-HomeFoods-HomeFoodsUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HomeFoods-HomeFoodsUITests.debug.xcconfig"; path = "Target Support Files/Pods-HomeFoods-HomeFoodsUITests/Pods-HomeFoods-HomeFoodsUITests.debug.xcconfig"; sourceTree = "<group>"; };
+		7D5ED37C86B14C06EEEF605F /* Pods_HomeFoodsTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_HomeFoodsTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		86308AB64B394E7C6B83BD02 /* Pods-HomeFoodsTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HomeFoodsTests.debug.xcconfig"; path = "Target Support Files/Pods-HomeFoodsTests/Pods-HomeFoodsTests.debug.xcconfig"; sourceTree = "<group>"; };
+		A156EC3A84ADC8BBF232D57E /* Pods-HomeFoods-HomeFoodsUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HomeFoods-HomeFoodsUITests.release.xcconfig"; path = "Target Support Files/Pods-HomeFoods-HomeFoodsUITests/Pods-HomeFoods-HomeFoodsUITests.release.xcconfig"; sourceTree = "<group>"; };
+		B29AE631BF0C8C45B7179954 /* Pods-HomeFoods.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HomeFoods.release.xcconfig"; path = "Target Support Files/Pods-HomeFoods/Pods-HomeFoods.release.xcconfig"; sourceTree = "<group>"; };
+		C4BE4A803C635C903DFD8CB0 /* Pods_HomeFoods.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_HomeFoods.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		FE823D1F94D924351E3350DD /* Pods_HomeFoods_HomeFoodsUITests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_HomeFoods_HomeFoodsUITests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		49965B682D33670C00D70271 /* Exceptions for "HomeFoods" folder in "HomeFoodsTests" target */ = {
+		49402C222D755C5000DFFB4C /* Exceptions for "HomeFoods" folder in "HomeFoods" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				"GoogleService-Info.plist",
+				Info.plist,
 			);
-			target = 49F3CDFE2D21BCD0009BF02A /* HomeFoodsTests */;
-		};
-		49965B692D33670C00D70271 /* Exceptions for "HomeFoods" folder in "HomeFoodsUITests" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				"GoogleService-Info.plist",
-			);
-			target = 49F3CE082D21BCD0009BF02A /* HomeFoodsUITests */;
+			target = 49F3CDEE2D21BCCE009BF02A /* HomeFoods */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
@@ -60,8 +70,7 @@
 		49F3CDF12D21BCCE009BF02A /* HomeFoods */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				49965B682D33670C00D70271 /* Exceptions for "HomeFoods" folder in "HomeFoodsTests" target */,
-				49965B692D33670C00D70271 /* Exceptions for "HomeFoods" folder in "HomeFoodsUITests" target */,
+				49402C222D755C5000DFFB4C /* Exceptions for "HomeFoods" folder in "HomeFoods" target */,
 			);
 			path = HomeFoods;
 			sourceTree = "<group>";
@@ -86,10 +95,16 @@
 				49965B702D336DB600D70271 /* FirebaseCrashlytics in Frameworks */,
 				49965B722D336DB600D70271 /* FirebaseFirestore in Frameworks */,
 				49965B762D336DB600D70271 /* FirebasePerformance in Frameworks */,
+				49402A542D74D88A00DFFB4C /* StripeApplePay in Frameworks */,
+				49402A562D74D88B00DFFB4C /* StripePaymentSheet in Frameworks */,
+				49402B892D755B4A00DFFB4C /* GoogleSignInSwift in Frameworks */,
+				49402B872D755B4A00DFFB4C /* GoogleSignIn in Frameworks */,
 				49965B742D336DB600D70271 /* FirebaseMessaging in Frameworks */,
 				49965B782D336DB600D70271 /* FirebaseStorage in Frameworks */,
+				49402A522D74D88A00DFFB4C /* Stripe in Frameworks */,
 				49965B6C2D336DB600D70271 /* FirebaseAnalytics in Frameworks */,
 				49965B6E2D336DB600D70271 /* FirebaseAuth in Frameworks */,
+				DFD56A4EFFF5C7B32DE09180 /* Pods_HomeFoods.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -97,6 +112,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				44D83FA7D289EE07409E074A /* Pods_HomeFoodsTests.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -104,12 +120,36 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				005ED16147B5FF396A220855 /* Pods_HomeFoods_HomeFoodsUITests.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		237CC4826D45966A79112CC6 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				C4BE4A803C635C903DFD8CB0 /* Pods_HomeFoods.framework */,
+				FE823D1F94D924351E3350DD /* Pods_HomeFoods_HomeFoodsUITests.framework */,
+				7D5ED37C86B14C06EEEF605F /* Pods_HomeFoodsTests.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		47374719C05DE1B958604423 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				51CB2031C13530CCD526130D /* Pods-HomeFoods.debug.xcconfig */,
+				B29AE631BF0C8C45B7179954 /* Pods-HomeFoods.release.xcconfig */,
+				641AE33DFA142A2B91C1B996 /* Pods-HomeFoods-HomeFoodsUITests.debug.xcconfig */,
+				A156EC3A84ADC8BBF232D57E /* Pods-HomeFoods-HomeFoodsUITests.release.xcconfig */,
+				86308AB64B394E7C6B83BD02 /* Pods-HomeFoodsTests.debug.xcconfig */,
+				02370C2AF41870E1101BC41B /* Pods-HomeFoodsTests.release.xcconfig */,
+			);
+			path = Pods;
+			sourceTree = "<group>";
+		};
 		49F3CDE62D21BCCE009BF02A = {
 			isa = PBXGroup;
 			children = (
@@ -117,6 +157,8 @@
 				49F3CE022D21BCD0009BF02A /* HomeFoodsTests */,
 				49F3CE0C2D21BCD0009BF02A /* HomeFoodsUITests */,
 				49F3CDF02D21BCCE009BF02A /* Products */,
+				47374719C05DE1B958604423 /* Pods */,
+				237CC4826D45966A79112CC6 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -137,9 +179,11 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 49F3CE132D21BCD0009BF02A /* Build configuration list for PBXNativeTarget "HomeFoods" */;
 			buildPhases = (
+				0F18A009F68CBF3ADE5F38FB /* [CP] Check Pods Manifest.lock */,
 				49F3CDEB2D21BCCE009BF02A /* Sources */,
 				49F3CDEC2D21BCCE009BF02A /* Frameworks */,
 				49F3CDED2D21BCCE009BF02A /* Resources */,
+				5FCCAD31F0978B44F6E92E05 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -157,6 +201,11 @@
 				49965B732D336DB600D70271 /* FirebaseMessaging */,
 				49965B752D336DB600D70271 /* FirebasePerformance */,
 				49965B772D336DB600D70271 /* FirebaseStorage */,
+				49402A512D74D88A00DFFB4C /* Stripe */,
+				49402A532D74D88A00DFFB4C /* StripeApplePay */,
+				49402A552D74D88A00DFFB4C /* StripePaymentSheet */,
+				49402B862D755B4A00DFFB4C /* GoogleSignIn */,
+				49402B882D755B4A00DFFB4C /* GoogleSignInSwift */,
 			);
 			productName = HomeFoods;
 			productReference = 49F3CDEF2D21BCCE009BF02A /* HomeFoods.app */;
@@ -166,6 +215,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 49F3CE162D21BCD0009BF02A /* Build configuration list for PBXNativeTarget "HomeFoodsTests" */;
 			buildPhases = (
+				189E2C3ADD7EC2375B4B4429 /* [CP] Check Pods Manifest.lock */,
 				49F3CDFB2D21BCD0009BF02A /* Sources */,
 				49F3CDFC2D21BCD0009BF02A /* Frameworks */,
 				49F3CDFD2D21BCD0009BF02A /* Resources */,
@@ -179,8 +229,6 @@
 				49F3CE022D21BCD0009BF02A /* HomeFoodsTests */,
 			);
 			name = HomeFoodsTests;
-			packageProductDependencies = (
-			);
 			productName = HomeFoodsTests;
 			productReference = 49F3CDFF2D21BCD0009BF02A /* HomeFoodsTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
@@ -189,9 +237,11 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 49F3CE192D21BCD0009BF02A /* Build configuration list for PBXNativeTarget "HomeFoodsUITests" */;
 			buildPhases = (
+				F298B8C64217312318E2FDF7 /* [CP] Check Pods Manifest.lock */,
 				49F3CE052D21BCD0009BF02A /* Sources */,
 				49F3CE062D21BCD0009BF02A /* Frameworks */,
 				49F3CE072D21BCD0009BF02A /* Resources */,
+				6E2096B4A97975A64D08EE3A /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -202,8 +252,6 @@
 				49F3CE0C2D21BCD0009BF02A /* HomeFoodsUITests */,
 			);
 			name = HomeFoodsUITests;
-			packageProductDependencies = (
-			);
 			productName = HomeFoodsUITests;
 			productReference = 49F3CE092D21BCD0009BF02A /* HomeFoodsUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
@@ -242,6 +290,8 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				49965B6A2D336DB600D70271 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				49402A502D74D88A00DFFB4C /* XCRemoteSwiftPackageReference "stripe-ios" */,
+				49402B852D755B4A00DFFB4C /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 49F3CDF02D21BCCE009BF02A /* Products */;
@@ -278,6 +328,109 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		0F18A009F68CBF3ADE5F38FB /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-HomeFoods-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		189E2C3ADD7EC2375B4B4429 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-HomeFoodsTests-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		5FCCAD31F0978B44F6E92E05 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-HomeFoods/Pods-HomeFoods-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-HomeFoods/Pods-HomeFoods-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-HomeFoods/Pods-HomeFoods-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		6E2096B4A97975A64D08EE3A /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-HomeFoods-HomeFoodsUITests/Pods-HomeFoods-HomeFoodsUITests-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-HomeFoods-HomeFoodsUITests/Pods-HomeFoods-HomeFoodsUITests-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-HomeFoods-HomeFoodsUITests/Pods-HomeFoods-HomeFoodsUITests-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		F298B8C64217312318E2FDF7 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-HomeFoods-HomeFoodsUITests-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		49F3CDEB2D21BCCE009BF02A /* Sources */ = {
@@ -438,6 +591,7 @@
 		};
 		49F3CE142D21BCD0009BF02A /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 51CB2031C13530CCD526130D /* Pods-HomeFoods.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -447,6 +601,7 @@
 				DEVELOPMENT_TEAM = BAWBYH4LR8;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = HomeFoods/Info.plist;
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We need your location to know your location.";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "We need access to your photos to upload food images.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -469,6 +624,7 @@
 		};
 		49F3CE152D21BCD0009BF02A /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = B29AE631BF0C8C45B7179954 /* Pods-HomeFoods.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -478,6 +634,7 @@
 				DEVELOPMENT_TEAM = BAWBYH4LR8;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = HomeFoods/Info.plist;
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We need your location to know your location.";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "We need access to your photos to upload food images.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -500,6 +657,7 @@
 		};
 		49F3CE172D21BCD0009BF02A /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 86308AB64B394E7C6B83BD02 /* Pods-HomeFoodsTests.debug.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
@@ -519,6 +677,7 @@
 		};
 		49F3CE182D21BCD0009BF02A /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 02370C2AF41870E1101BC41B /* Pods-HomeFoodsTests.release.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
@@ -538,6 +697,7 @@
 		};
 		49F3CE1A2D21BCD0009BF02A /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 641AE33DFA142A2B91C1B996 /* Pods-HomeFoods-HomeFoodsUITests.debug.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -555,6 +715,7 @@
 		};
 		49F3CE1B2D21BCD0009BF02A /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = A156EC3A84ADC8BBF232D57E /* Pods-HomeFoods-HomeFoodsUITests.release.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -612,6 +773,22 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		49402A502D74D88A00DFFB4C /* XCRemoteSwiftPackageReference "stripe-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/stripe/stripe-ios";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 24.6.0;
+			};
+		};
+		49402B852D755B4A00DFFB4C /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/google/GoogleSignIn-iOS.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 8.0.0;
+			};
+		};
 		49965B6A2D336DB600D70271 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
@@ -623,6 +800,31 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		49402A512D74D88A00DFFB4C /* Stripe */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 49402A502D74D88A00DFFB4C /* XCRemoteSwiftPackageReference "stripe-ios" */;
+			productName = Stripe;
+		};
+		49402A532D74D88A00DFFB4C /* StripeApplePay */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 49402A502D74D88A00DFFB4C /* XCRemoteSwiftPackageReference "stripe-ios" */;
+			productName = StripeApplePay;
+		};
+		49402A552D74D88A00DFFB4C /* StripePaymentSheet */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 49402A502D74D88A00DFFB4C /* XCRemoteSwiftPackageReference "stripe-ios" */;
+			productName = StripePaymentSheet;
+		};
+		49402B862D755B4A00DFFB4C /* GoogleSignIn */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 49402B852D755B4A00DFFB4C /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
+			productName = GoogleSignIn;
+		};
+		49402B882D755B4A00DFFB4C /* GoogleSignInSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 49402B852D755B4A00DFFB4C /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
+			productName = GoogleSignInSwift;
+		};
 		49965B6B2D336DB600D70271 /* FirebaseAnalytics */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 49965B6A2D336DB600D70271 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
