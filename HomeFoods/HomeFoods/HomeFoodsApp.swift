@@ -48,6 +48,11 @@ struct HomeFoodsApp: App {
     @StateObject private var locationManager = LocationManager()
     @StateObject var notificationViewModel = NotificationViewModel()
     
+    init() {
+        // This sets a dummy key initially, which will be replaced with the real key from the backend
+        StripeAPI.defaultPublishableKey = "pk_test_51R19tUGd1SbjqZlmZbF4lPpTX8lI1IthtI3HhzLOVsN8iJ2NMuxbATqQPYinkkFPuDBz1YTlmJ3F12Po6SeaT1CD00Jrgy7o6N"
+    }
+    
     var body: some Scene {
         WindowGroup {
             if appViewModel.isAuthenticated {
