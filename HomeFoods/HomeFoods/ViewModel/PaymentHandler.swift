@@ -20,7 +20,7 @@ class PaymentHandler: ObservableObject {
     var paymentSheet: PaymentSheet?
     
     // Backend URL - change this if your server runs on a different port
-    private let backendURL = "http://localhost:3000"
+    private let backendURL = "https://us-central1-your-project-id.cloudfunctions.net/api"
     
     // Prepares a payment by getting a paymentIntent from the backend
     func preparePayment(amount: Double, orderId: String) async throws -> PaymentSheet {
